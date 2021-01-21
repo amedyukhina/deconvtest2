@@ -4,6 +4,26 @@ from scipy import ndimage
 
 
 def gaussian(sigma: float, aspect: float = 1., scale: int = 8, **kwargs_to_ignore: dict):
+    """
+    Generates a Point Spread Function (PSF) as a 3D Gaussian with given standard deviation and aspect ratio.
+
+    Parameters
+    ----------
+    sigma : float
+        Standard deviation in xy in pixels of the Gaussian function that is used to approximate the PSF.
+    aspect : float, optional
+        Ratio between the Gaussian standard deviations in z and xy.
+        Default is 1.
+    scale : int, optional
+        Multiplier to specify the dimensions of the output PSF image relative to sigma.
+        Default is 8.
+
+    Returns
+    -------
+    numpy.ndarray
+        Output 3D image of the PSF.
+    """
+
     if not type(sigma) in [float, int]:
         raise TypeError("'sigma' must be int or float, '{}' provided!".format(type(sigma).__name__))
     if not type(aspect) in [float, int]:
