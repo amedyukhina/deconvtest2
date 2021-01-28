@@ -1,7 +1,7 @@
 import unittest
-from ddt import ddt, data
 
 import numpy as np
+from ddt import ddt, data
 
 from ...psf.psf_modules import gaussian
 

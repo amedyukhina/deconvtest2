@@ -1,4 +1,5 @@
 from __future__ import division
+
 import numpy as np
 from scipy import ndimage
 
@@ -39,5 +40,3 @@ def gaussian(sigma: float, aspect: float = 1., scale: int = 8, **kwargs_to_ignor
     psf = ndimage.gaussian_filter(psf, [sigma * aspect, sigma, sigma])  # smooth the peak with a Gaussian
     psf = psf / np.max(psf)
     return psf
-
-
