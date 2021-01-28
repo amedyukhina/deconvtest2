@@ -1,8 +1,8 @@
+import importlib.util
 import inspect
 import os
-import importlib.util
-
 from pathlib import Path
+
 MODULE_EXTENSIONS = '.py'
 
 
