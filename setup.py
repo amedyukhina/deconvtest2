@@ -5,7 +5,12 @@ setup(
     version='0.0',
     author="Anna Medyukhina",
     author_email='anna.medyukhina@gmail.com',
-    packages=['deconvtest2_modules'],
+    packages=['deconvtest2_modules',
+              'deconvtest2_modules.ground_truth',
+              'deconvtest2_modules.psf',
+              'deconvtest2_modules.transforms',
+              'deconvtest2_modules.deconvolution',
+              'deconvtest2_modules.evaluation'],
     license='BSD-3-Clause',
     include_package_data=True,
 
