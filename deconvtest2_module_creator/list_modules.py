@@ -29,7 +29,8 @@ def __list_modules(package_name):
 
 
 def list_package_contents(package):
-    modules = list(__list_modules(package))
+    package_name = package.__name__
+    modules = list(__list_modules(package_name))
     functions = []
     for module in modules:
         if len(module.split('tests')) == 1:
@@ -37,9 +38,10 @@ def list_package_contents(package):
             module_functions = inspect.getmembers(m, inspect.isfunction)
             for function in module_functions:
                 func_info = inspect.getfullargspec(function[1])
-                functions.append(function + (func_info,))
+                functions.append((function[1], func_info))
     return functions
 
 
 if __name__ == '__main__':
-    print(list_package_contents('deconvtest2_modules'))
+    import deconvtest2_modules
+    print(list_package_contents(deconvtest2_modules))
