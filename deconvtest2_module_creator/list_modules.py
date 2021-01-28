@@ -44,4 +44,5 @@ def list_package_contents(package):
 
 if __name__ == '__main__':
     import deconvtest2_modules
+
     print(list_package_contents(deconvtest2_modules))
