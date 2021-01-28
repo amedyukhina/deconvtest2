@@ -1,5 +1,6 @@
-import numpy as np
 from typing import Union
+
+import numpy as np
 
 
 def convert_voxel_size(voxel_size: Union[float, list, np.ndarray]):
@@ -21,7 +22,7 @@ def convert_voxel_size(voxel_size: Union[float, list, np.ndarray]):
         raise TypeError("'voxel_size' must be number or sequence, '{}' provided!".format(type(voxel_size).__name__))
     voxel_size = np.array([voxel_size]).flatten()
     if len(voxel_size) == 1:
-        voxel_size = np.array([voxel_size[0]]*3)
+        voxel_size = np.array([voxel_size[0]] * 3)
     elif len(voxel_size) == 2:
         voxel_size = np.array([voxel_size[0], voxel_size[1], voxel_size[1]])
     elif len(voxel_size) == 3:
@@ -29,4 +30,3 @@ def convert_voxel_size(voxel_size: Union[float, list, np.ndarray]):
     else:
         raise ValueError('voxel size must be a number of a sequence of length 2 or 3!')
     return voxel_size
-

@@ -20,7 +20,8 @@ def gaussian(sigma: list, scale: int = 8):
         Output Gaussian kernel with the number of dimensions specified by the length of `sigma`.
     """
     if not type(sigma) in [float, int, list, np.ndarray]:
-        raise TypeError("'sigma' must be int, float, list, or numpy.ndarray '{}' provided!".format(type(sigma).__name__))
+        raise TypeError(
+            "'sigma' must be int, float, list, or numpy.ndarray '{}' provided!".format(type(sigma).__name__))
     if not type(scale) is int:
         raise TypeError("'scale' must be integer, '{}' provided!".format(type(scale).__name__))
     sigma = np.array([sigma]).flatten()

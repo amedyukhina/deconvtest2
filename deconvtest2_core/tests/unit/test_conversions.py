@@ -5,6 +5,7 @@ from ddt import ddt, data
 
 from ...utils.conversion import convert_voxel_size
 
+
 @ddt
 class TestConversion(unittest.TestCase):
     @data(
@@ -20,10 +21,11 @@ class TestConversion(unittest.TestCase):
         self.assertRaises(TypeError, convert_voxel_size, x)
 
     @data(
-        [], np.ones(10), [1,2,3,4],
+        [], np.ones(10), [1, 2, 3, 4],
     )
     def test_invalid_voxel_size_length(self, x):
         self.assertRaises(ValueError, convert_voxel_size, x)
+
 
 if __name__ == '__main__':
     unittest.main()
