@@ -6,7 +6,8 @@ setup(
     author="Anna Medyukhina",
     author_email='anna.medyukhina@gmail.com',
     packages=['deconvtest2_core',
-              'deconvtest2_core.shapes',],
+              'deconvtest2_core.shapes',
+              'deconvtest2_core.utils'],
     license='BSD-3-Clause',
     include_package_data=True,
 
