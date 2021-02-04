@@ -38,7 +38,8 @@ def list_package_contents(package):
             module_functions = inspect.getmembers(m, inspect.isfunction)
             for function in module_functions:
                 func_info = inspect.getfullargspec(function[1])
-                functions.append((function[1], func_info))
+                if function[1].__module__.startswith(package_name):
+                    functions.append((function[1], func_info))
     return functions
 
 
