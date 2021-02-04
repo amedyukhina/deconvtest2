@@ -1,6 +1,7 @@
 from typing import Union
 
 import numpy as np
+from deconvtest2_core.utils.utils import check_type
 
 
 def convert_size(size: Union[float, list, np.ndarray]):
@@ -28,3 +29,31 @@ def convert_size(size: Union[float, list, np.ndarray]):
     else:
         raise ValueError('Size must be a number of a sequence of length 2 or 3!')
     return size
+
+
+def unify_shape(x: np.ndarray, y: np.ndarray):
+    """
+    Pads the two given arrays to bring them to the same shape.
+
+    Parameters
+    ----------
+    x, y : ndarray
+        Input arrays
+    Returns
+    -------
+    x, y : ndarray
+        Modified input arrays having the same shape.
+    """
+    check_type(['x', 'y'],
+               [x, y],
+               [np.ndarray]*2)
+    if len(x.shape) != len(y.shape):
+        raise ValueError("The number of dimensions in the two arrays must be equal!")
+    nshape = np.array([x.shape, y.shape]).max(0)
+    out = []
+    for arr in [x, y]:
+        shape_diff = (nshape - np.array(arr.shape))
+        pad_width = [(int(shape_diff[i] / 2), shape_diff[i] - int(shape_diff[i] / 2)) for i in range(len(shape_diff))]
+        out.append(np.pad(arr, pad_width=pad_width, mode='constant', constant_values=0))
+
+    return out
