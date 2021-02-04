@@ -3,7 +3,8 @@ import unittest
 from ddt import ddt, data
 import numpy as np
 
-from ...utils.utils import check_type
+from ...utils.utils import check_type, list_modules
+import deconvtest2_core
 
 
 @ddt
@@ -25,6 +26,12 @@ class TestUtils(unittest.TestCase):
     def test_wrong_type_check(self, case):
         names, variables, types = case
         self.assertRaises(TypeError, check_type, names, variables, types)
+
+    def test_list_modules(self):
+        modules = list_modules(deconvtest2_core)
+        modules = [module[0].__name__ for module in modules]
+        self.assertIn('__list_modules', modules)
+        self.assertIn('list_modules', modules)
 
 
 if __name__ == '__main__':
