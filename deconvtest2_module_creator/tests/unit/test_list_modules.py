@@ -1,7 +1,7 @@
 import unittest
 
 from ...list_modules import list_package_contents
-from .... import deconvtest2_module_creator
+import deconvtest2_module_creator
 
 
 class TestListModules(unittest.TestCase):
