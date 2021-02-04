@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 from deconvtest2_core.shapes import shapes
-from deconvtest2_core.utils.conversion import convert_voxel_size
+from deconvtest2_core.utils.conversion import convert_size
 
 
 def gaussian(sigma: float, aspect: float = 1., voxel_size: Union[float, list, np.ndarray] = 1.):
@@ -32,7 +32,7 @@ def gaussian(sigma: float, aspect: float = 1., voxel_size: Union[float, list, np
     if not type(aspect) in [float, int]:
         raise TypeError("'aspect' must be int or float, '{}' provided!".format(type(aspect).__name__))
 
-    voxel_size = convert_voxel_size(voxel_size)
+    voxel_size = convert_size(voxel_size)
     sigmas = np.array([aspect * sigma, sigma, sigma]) / voxel_size
     psf = shapes.gaussian(sigma=sigmas, scale=8)
     return psf
