@@ -39,23 +39,23 @@ class TestEllipsoid(unittest.TestCase):
         self.assertEqual(len(ellipsoid(x).shape), size)
 
     @data(
-        [20, 10, 10], [2, 2], np.ones(3)*5,
+        [20, 10, 10], [2, 2], np.ones(3) * 5,
     )
     def test_sizes(self, x):
         ell = ellipsoid(x)
         volume = np.sum(ell > 0)
-        target_volume = 4./3 * np.pi * np.prod(np.array(x)/2.)
+        target_volume = 4. / 3 * np.pi * np.prod(np.array(x) / 2.)
         diff = volume - target_volume
         if abs(diff) < 30:
             diff = 0
-        self.assertLess(abs(diff/target_volume), 0.1)
+        self.assertLess(abs(diff / target_volume), 0.1)
         self.assertEqual(sum_of_border_pixels(ell, margin=1), 0)
 
     @data(
-        (0, np.pi/2),
-        (np.pi/2, 0),
-        (np.pi/4, np.pi/4),
-        (np.pi, np.pi*3/4),
+        (0, np.pi / 2),
+        (np.pi / 2, 0),
+        (np.pi / 4, np.pi / 4),
+        (np.pi, np.pi * 3 / 4),
     )
     def test_rotation(self, x):
         phi, theta = x
@@ -66,14 +66,14 @@ class TestEllipsoid(unittest.TestCase):
         diff = volume - target_volume
         if abs(diff) < 30:
             diff = 0
-        self.assertLess(abs(diff/target_volume), 0.1)
+        self.assertLess(abs(diff / target_volume), 0.1)
         self.assertEqual(sum_of_border_pixels(ell, margin=3), 0)
 
     @data(
         1, 2, 3, 4, 5,
     )
     def test_margin(self, target_margin):
-        ell = ellipsoid([21, 11, 11], np.pi/4, 0, margin=target_margin)
+        ell = ellipsoid([21, 11, 11], np.pi / 4, 0, margin=target_margin)
         indmin, indmax = bounding_box(ell)
         output_margin = (np.array(ell.shape) - (indmax - indmin + 1)) / 2
         for i in range(len(output_margin)):
