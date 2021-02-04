@@ -1,6 +1,7 @@
 import unittest
 
 from ddt import ddt, data
+import numpy as np
 
 from ...utils.utils import check_type
 
@@ -11,6 +12,7 @@ class TestUtils(unittest.TestCase):
     @data(
         (['var1', 'var2', 'var3'], [3, [2, 4.5], 'aiosghfr'], [int, [int, list], str]),
         (['var1'], ['s'], [[str, float]]),
+        (['var1'], [np.ones(10)], [[list, np.ndarray]]),
     )
     def test_type_check(self, case):
         names, variables, types = case
