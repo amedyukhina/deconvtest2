@@ -47,6 +47,7 @@ class TestEllipsoid(unittest.TestCase):
         diff = volume - target_volume
         if abs(diff) < 30:
             diff = 0
+        print(volume, target_volume)
         self.assertLess(abs(diff/target_volume), 0.1)
         self.assertEqual(sum_of_border_pixels(ell, margin=1), 0)
 

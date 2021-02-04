@@ -3,6 +3,8 @@ from typing import Union
 import numpy as np
 from scipy import ndimage
 
+from ..utils.measure import bounding_box
+
 
 def gaussian(sigma: Union[list, np.ndarray], scale: int = 4):
     """
@@ -35,7 +37,11 @@ def gaussian(sigma: Union[list, np.ndarray], scale: int = 4):
     return kernel
 
 
-def ellipsoid(axis_sizes: list, phi: float = 0, theta: float = 0, cval: float = 255.):
+def ellipsoid(axis_sizes: Union[list, np.ndarray],
+              phi: float = 0,
+              theta: float = 0,
+              cval: float = 255.,
+              margin: int = 3):
     """
 
     Parameters
@@ -54,6 +60,9 @@ def ellipsoid(axis_sizes: list, phi: float = 0, theta: float = 0, cval: float = 
     cval : float, optional
         Value to fill the ellipsoid.
         Default is 255.
+    margin : int, optional
+        Margin between ellipsoid shape and image border in pixels.
+        Default is 3.
 
     Returns
     -------
@@ -93,4 +102,10 @@ def ellipsoid(axis_sizes: list, phi: float = 0, theta: float = 0, cval: float = 
 
     # threshold the gaussian kernel
     gauss_kernel = (gauss_kernel >= np.percentile(gauss_kernel, percentile)) * cval
+    indmin, indmax = bounding_box(gauss_kernel)
+    slc = tuple([slice(max(0, indmin[i] - margin),
+                       min(gauss_kernel.shape[i], indmax[i] + 1 + margin))
+                 for i in range(len(indmin))])
+    gauss_kernel = gauss_kernel[slc]
+
     return gauss_kernel
