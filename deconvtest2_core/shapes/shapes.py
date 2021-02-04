@@ -8,7 +8,7 @@ from ..utils.measure import bounding_box
 
 def gaussian(sigma: Union[list, np.ndarray], scale: int = 4):
     """
-    Generates a Point Spread Function (PSF) as a 3D Gaussian with given standard deviation and aspect ratio.
+    Generates a Gaussian kernel of a given size.
 
     Parameters
     ----------
@@ -43,6 +43,7 @@ def ellipsoid(axis_sizes: Union[list, np.ndarray],
               cval: float = 255.,
               margin: int = 3):
     """
+    Generate an ellipsoid mask of a given axis size.
 
     Parameters
     ----------
