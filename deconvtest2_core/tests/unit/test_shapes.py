@@ -39,7 +39,12 @@ class TestEllipsoid(unittest.TestCase):
         self.assertEqual(len(ellipsoid(x).shape), size)
 
     @data(
-        [20, 10, 10], [2, 2], np.ones(3) * 5,
+        [20, 10, 10],
+        [20, 11, 11],
+        [50, 21, 21],
+        [41, 20, 20],
+        [2, 2],
+        np.ones(3) * 5,
     )
     def test_sizes(self, x):
         ell = ellipsoid(x)
