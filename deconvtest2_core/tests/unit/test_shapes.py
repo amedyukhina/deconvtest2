@@ -4,6 +4,7 @@ import numpy as np
 from ddt import ddt, data
 
 from ...shapes.shapes import gaussian, ellipsoid
+from ...utils.measure import bounding_box
 
 
 def sum_of_border_pixels(arr, margin=3):
@@ -47,7 +48,6 @@ class TestEllipsoid(unittest.TestCase):
         diff = volume - target_volume
         if abs(diff) < 30:
             diff = 0
-        print(volume, target_volume)
         self.assertLess(abs(diff/target_volume), 0.1)
         self.assertEqual(sum_of_border_pixels(ell, margin=1), 0)
 
@@ -68,6 +68,16 @@ class TestEllipsoid(unittest.TestCase):
             diff = 0
         self.assertLess(abs(diff/target_volume), 0.1)
         self.assertEqual(sum_of_border_pixels(ell, margin=3), 0)
+
+    @data(
+        1, 2, 3, 4, 5,
+    )
+    def test_margin(self, target_margin):
+        ell = ellipsoid([21, 11, 11], np.pi/4, 0, margin=target_margin)
+        indmin, indmax = bounding_box(ell)
+        output_margin = (np.array(ell.shape) - (indmax - indmin + 1)) / 2
+        for i in range(len(output_margin)):
+            self.assertGreaterEqual(target_margin, output_margin[i])
 
 
 if __name__ == '__main__':
