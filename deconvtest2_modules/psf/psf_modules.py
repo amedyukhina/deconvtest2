@@ -3,6 +3,7 @@ from typing import Union
 import numpy as np
 from deconvtest2_core.shapes import shapes
 from deconvtest2_core.utils.conversion import convert_size
+from deconvtest2_core.utils.utils import check_type
 
 
 def gaussian(sigma: float, aspect: float = 1., voxel_size: Union[float, list, np.ndarray] = 1.):
@@ -26,11 +27,9 @@ def gaussian(sigma: float, aspect: float = 1., voxel_size: Union[float, list, np
     numpy.ndarray
         Output 3D image of the PSF.
     """
-
-    if not type(sigma) in [float, int]:
-        raise TypeError("'sigma' must be int or float, '{}' provided!".format(type(sigma).__name__))
-    if not type(aspect) in [float, int]:
-        raise TypeError("'aspect' must be int or float, '{}' provided!".format(type(aspect).__name__))
+    check_type(['sigma', 'voxel_size', 'aspect'],
+               [sigma, voxel_size, aspect],
+               [[int, float], [float, int, list, np.ndarray], [float, int]])
 
     voxel_size = convert_size(voxel_size)
     sigmas = np.array([aspect * sigma, sigma, sigma]) / voxel_size
