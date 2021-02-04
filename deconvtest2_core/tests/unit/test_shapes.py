@@ -6,6 +6,18 @@ from ddt import ddt, data
 from ...shapes.shapes import gaussian, ellipsoid
 
 
+def sum_of_border_pixels(arr, margin=3):
+    border_pix = 0
+    for i in range(len(arr.shape)):
+        slc = [slice(None)] * len(arr.shape)
+        slc[i] = slice(-margin, None)
+        border_pix += np.sum(arr[tuple(slc)])
+        slc = [slice(None)] * len(arr.shape)
+        slc[i] = slice(0, margin)
+        border_pix += np.sum(arr[tuple(slc)])
+    return border_pix
+
+
 @ddt
 class TestGaussian(unittest.TestCase):
     @data(
@@ -28,22 +40,33 @@ class TestEllipsoid(unittest.TestCase):
     @data(
         [20, 10, 10], [2, 2], np.ones(3)*5,
     )
-    def test_output_volume(self, x):
-        volume = np.sum(ellipsoid(x) > 0)
+    def test_sizes(self, x):
+        ell = ellipsoid(x)
+        volume = np.sum(ell > 0)
         target_volume = 4./3 * np.pi * np.prod(np.array(x)/2.)
         diff = volume - target_volume
         if abs(diff) < 30:
             diff = 0
         self.assertLess(abs(diff/target_volume), 0.1)
+        self.assertEqual(sum_of_border_pixels(ell, margin=1), 0)
 
-    # def test_rotation(self):
-    #     x = ellipsoid([20, 10, 10], phi=0, theta=np.pi / 2)
-    #     volume = np.sum(x > 0)
-    #     target_volume = 4. / 3 * np.pi * np.prod(np.array([20, 10, 10]) / 2.)
-    #     diff = volume - target_volume
-    #     if abs(diff) < 30:
-    #         diff = 0
-    #     print(volume, target_volume, diff)
+    @data(
+        (0, np.pi/2),
+        (np.pi/2, 0),
+        (np.pi/4, np.pi/4),
+        (np.pi, np.pi*3/4),
+    )
+    def test_rotation(self, x):
+        phi, theta = x
+        size = np.array([20, 10, 10])
+        ell = ellipsoid(size, phi, theta)
+        volume = np.sum(ell > 0)
+        target_volume = 4. / 3 * np.pi * np.prod(size / 2.)
+        diff = volume - target_volume
+        if abs(diff) < 30:
+            diff = 0
+        self.assertLess(abs(diff/target_volume), 0.1)
+        self.assertEqual(sum_of_border_pixels(ell, margin=3), 0)
 
 
 if __name__ == '__main__':
