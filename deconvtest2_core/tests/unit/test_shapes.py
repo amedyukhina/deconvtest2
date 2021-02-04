@@ -15,24 +15,6 @@ class TestGaussian(unittest.TestCase):
         size = len(np.array([x]).flatten())
         self.assertEqual(len(gaussian(x).shape), size)
 
-    @data(
-        2, 10,
-    )
-    def test_scale_type(self, x):
-        self.assertIsInstance(gaussian(sigma=[2], scale=x), np.ndarray)
-
-    @data(
-        'a', 'jiaojgw',
-    )
-    def test_invalid_sigma_type(self, x):
-        self.assertRaises(TypeError, gaussian, sigma=x)
-
-    @data(
-        'a', [2, 3], 'jiaojgw', (2, 3), 10., 3.5,
-    )
-    def test_invalid_scale_type(self, x):
-        self.assertRaises(TypeError, gaussian, sigma=2, scale=x)
-
 
 @ddt
 class TestEllipsoid(unittest.TestCase):
@@ -62,24 +44,6 @@ class TestEllipsoid(unittest.TestCase):
     #     if abs(diff) < 30:
     #         diff = 0
     #     print(volume, target_volume, diff)
-
-    # @data(
-    #     2, 10,
-    # )
-    # def test_scale_type(self, x):
-    #     self.assertIsInstance(gaussian(sigma=[2], scale=x), np.ndarray)
-    #
-    # @data(
-    #     'a', 'jiaojgw',
-    # )
-    # def test_invalid_sigma_type(self, x):
-    #     self.assertRaises(TypeError, gaussian, sigma=x)
-    #
-    # @data(
-    #     'a', [2, 3], 'jiaojgw', (2, 3), 10., 3.5,
-    # )
-    # def test_invalid_scale_type(self, x):
-    #     self.assertRaises(TypeError, gaussian, sigma=2, scale=x)
 
 
 if __name__ == '__main__':

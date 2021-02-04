@@ -21,11 +21,6 @@ def gaussian(sigma: Union[list, np.ndarray], scale: int = 4):
     numpy.ndarray
         Output Gaussian kernel with the number of dimensions specified by the length of `sigma`.
     """
-    if not type(sigma) in [float, int, list, np.ndarray]:
-        raise TypeError(
-            "'sigma' must be int, float, list, or numpy.ndarray '{}' provided!".format(type(sigma).__name__))
-    if not type(scale) is int:
-        raise TypeError("'scale' must be integer, '{}' provided!".format(type(scale).__name__))
     sigma = np.array([sigma]).flatten()
 
     # calculate the size of the output array based on sigma and scale; make sure it is non-zero
@@ -65,18 +60,6 @@ def ellipsoid(axis_sizes: list, phi: float = 0, theta: float = 0, cval: float = 
     numpy.ndarray
         2- or 3-dimensional binary image of ellipsoid
     """
-    if not type(axis_sizes) in [list, np.ndarray]:
-        raise TypeError(
-            "'axis_sizes' must be a list or numpy.ndarray; '{}' provided!".format(type(axis_sizes).__name__))
-    if not type(phi) in [float, int]:
-        raise TypeError(
-            "'phi' must be a int or float; '{}' provided!".format(type(phi).__name__))
-    if not type(theta) in [float, int]:
-        raise TypeError(
-            "'theta' must be a int or float; '{}' provided!".format(type(theta).__name__))
-    if not type(cval) in [float, int]:
-        raise TypeError(
-            "'cval' must be a int or float; '{}' provided!".format(type(cval).__name__))
 
     # convert axis sizes
     axis_sizes = np.array([axis_sizes]).flatten()
