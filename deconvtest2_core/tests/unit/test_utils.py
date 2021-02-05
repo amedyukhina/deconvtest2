@@ -3,7 +3,7 @@ import unittest
 from ddt import ddt, data
 import numpy as np
 
-from ...utils.utils import check_type, list_modules
+from ...utils.utils import check_type, list_modules, modules_to_json
 import deconvtest2_core
 
 
@@ -30,6 +30,12 @@ class TestUtils(unittest.TestCase):
     def test_list_modules(self):
         modules = list_modules(deconvtest2_core)
         modules = [module[0].__name__ for module in modules]
+        self.assertIn('__list_modules', modules)
+        self.assertIn('list_modules', modules)
+
+    def test_modules_to_json(self):
+        modules = modules_to_json(list_modules(deconvtest2_core))
+        modules = [module['name'] for module in modules]
         self.assertIn('__list_modules', modules)
         self.assertIn('list_modules', modules)
 

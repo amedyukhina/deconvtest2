@@ -48,3 +48,23 @@ def list_modules(package):
                 if function[1].__module__.startswith(package_name):
                     functions.append((function[1], func_info))
     return functions
+
+
+def modules_to_json(modules):
+    functions = []
+    for module in modules:
+        function = dict({'name': module[0].__name__,
+                         'module': module[0].__module__,
+                        })
+        meta = module[1]._asdict()
+        for arg in meta['annotations'].keys():
+            if type(meta['annotations'][arg]) is type:
+                meta['annotations'][arg] = meta['annotations'][arg].__name__
+            else:
+                meta['annotations'][arg] = [t.__name__ for t in meta['annotations'][arg].__args__]
+        for key in meta.keys():
+            function[key] = meta[key]
+        functions.append(function)
+    return functions
+
+
