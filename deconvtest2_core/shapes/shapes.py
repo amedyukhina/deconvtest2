@@ -88,7 +88,7 @@ def ellipsoid(axis_sizes: Union[list, np.ndarray],
                                   'The number of dimensions provided was {}'.format(len(axis_sizes)))
 
     # generate a Gaussian kernel
-    gauss_kernel = gaussian(axis_sizes / np.min(axis_sizes) * 3, scale=int(round(np.min(axis_sizes)/3)))
+    gauss_kernel = gaussian(axis_sizes / 7.5, scale=8)
 
     # Rotate the Gaussian kernel according to the input angles
     if theta > 0:  # rotate the image, if rotation angles are not 0
