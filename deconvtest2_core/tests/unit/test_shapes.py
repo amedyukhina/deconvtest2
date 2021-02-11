@@ -45,6 +45,7 @@ class TestEllipsoid(unittest.TestCase):
         [41, 20, 20],
         [2, 2],
         np.ones(3) * 5,
+        [33]*3,
     )
     def test_sizes(self, x):
         ell = ellipsoid(x)
