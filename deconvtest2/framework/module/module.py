@@ -21,13 +21,14 @@ class Module:
     def import_method(self, method):
         parent_module = importlib.import_module(self.parent_name)
         available_modules = list_modules(parent_module)
-        for module in available_modules:
+        for module in available_modules:  # find a module with a matching name
             if module[0].__name__ == method:
                 self.method = module[0]
                 self.arg_spec = module[1]
 
-        if self.method is None:
+        if self.method is None:  # raise an error if no matching module found
             modules = [module[0].__name__ for module in available_modules]
             raise ValueError('{} is not a valid {} module; available modules are: {}'.format(method,
                                                                                              self.parent_name,
                                                                                              modules))
+
