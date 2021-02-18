@@ -20,7 +20,7 @@ class TestModuleImport(unittest.TestCase):
     @data(
         'regularized_inverse_filter',
     )
-    def test_deconv_method(self, method):
+    def test_deconvolution_method(self, method):
         module = DeconvolutionModule(method)
         self.assertIsNotNone(module.method)
 
@@ -34,7 +34,7 @@ class TestModuleImport(unittest.TestCase):
     @data(
         'fake_method',
     )
-    def test_deconv_method_err(self, method):
+    def test_deconvolution_method_err(self, method):
         self.assertRaises(ValueError, DeconvolutionModule, method)
 
 
