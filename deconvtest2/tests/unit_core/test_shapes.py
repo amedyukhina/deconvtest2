@@ -51,7 +51,7 @@ class TestEllipsoid(unittest.TestCase):
         volume = np.sum(ell > 0)
         target_volume = 4. / 3 * np.pi * np.prod(np.array(x) / 2.)
         diff = volume - target_volume
-        if abs(diff) < 30:
+        if abs(diff) < 20:
             diff = 0
         self.assertLess(abs(diff / target_volume), 0.1)
         self.assertEqual(sum_of_border_pixels(ell, margin=1), 0)
