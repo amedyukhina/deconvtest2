@@ -27,4 +27,7 @@ class Module:
                 self.arg_spec = module[1]
 
         if self.method is None:
-            raise ValueError('{} is not a valid {} module'.format(method, self.parent_name))
+            modules = [module[0].__name__ for module in available_modules]
+            raise ValueError('{} is not a valid {} module; available modules are: {}'.format(method,
+                                                                                             self.parent_name,
+                                                                                             modules))
