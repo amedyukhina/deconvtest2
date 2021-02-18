@@ -56,5 +56,4 @@ class Module:
                                              optional=optional,
                                              parameter_type=parameter_type))
 
-    def list_parameters(self):
-        print(self.arg_spec)
+
