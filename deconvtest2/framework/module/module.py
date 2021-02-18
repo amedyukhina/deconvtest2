@@ -1,5 +1,6 @@
 import importlib
 from deconvtest2.core.utils.utils import list_modules
+from ..module.parameter import Parameter
 
 
 class Module:
@@ -17,6 +18,8 @@ class Module:
         self.arg_spec = None
 
         self.import_method(method)
+        if self.arg_spec is not None:
+            self.add_parameters(self.arg_spec)
 
     def import_method(self, method):
         parent_module = importlib.import_module(self.parent_name)
@@ -32,3 +35,26 @@ class Module:
                                                                                              self.parent_name,
                                                                                              modules))
 
+    def add_parameters(self, arg_spec):
+        names = arg_spec.args
+        defaults = arg_spec.defaults
+        types = arg_spec.annotations
+        n_non_optional_parameters = len(names) - len(defaults)
+        self.parameters = []
+        for i in range(len(names)):
+            if i < n_non_optional_parameters:
+                optional = False
+                default = None
+            else:
+                optional = True
+                default = defaults[i - n_non_optional_parameters]
+            parameter_type = None
+            if names[i] in types.keys():
+                parameter_type = types[names[i]]
+            self.parameters.append(Parameter(name=names[i],
+                                             default_value=default,
+                                             optional=optional,
+                                             parameter_type=parameter_type))
+
+    def list_parameters(self):
+        print(self.arg_spec)
