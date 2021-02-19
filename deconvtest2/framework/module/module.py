@@ -9,13 +9,14 @@ class Module:
     """
     def __init__(self, method: str, parameters: dict = None, parent_name: str = 'deconvtest2.modules'):
         if parameters is None:
-            self.parameters = dict()
+            self.parameter_values = dict()
         else:
-            self.parameters = parameters
+            self.parameter_values = parameters
 
         self.parent_name = parent_name
         self.method = None
         self.arg_spec = None
+        self.parameters = []
 
         self.import_method(method)
         if self.arg_spec is not None:
@@ -56,4 +57,28 @@ class Module:
                                              optional=optional,
                                              parameter_type=parameter_type))
 
+    def verify_parameters(self):
+        for parameter in self.parameters:
+            if parameter.name in self.parameter_values.keys():
+                if type(parameter.type) is type:
+                    valid_types = [parameter.type]
+                else:
+                    valid_types = list(parameter.type.__args__)
+                if not type(self.parameter_values[parameter.name]) in valid_types:
+                    raise ValueError('{} is not a valid type for {}; '
+                                     'valid types are: {}'.format(type(self.parameter_values[parameter.name]),
+                                                                  parameter.name,
+                                                                  valid_types))
+
+            else:
+                # add default value if available, otherwise raise error
+                if parameter.optional is True:
+                    self.parameter_values[parameter.name] = parameter.default_value
+                else:
+                    raise ValueError('Parameter `{}` is mandatory, please provide a value!'.format(parameter.name))
+
+    def run(self, **parameters):
+        self.parameter_values = parameters
+        self.verify_parameters()
+        return self.method(**self.parameter_values)
 
