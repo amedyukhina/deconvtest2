@@ -37,6 +37,10 @@ class TestModuleImport(unittest.TestCase):
     def test_deconvolution_method_err(self, method):
         self.assertRaises(ValueError, DeconvolutionModule, method)
 
+    def test_module_run(self):
+        m = Module('ellipsoid')
+        self.assertIsInstance(m.run(size=5.), np.ndarray)
+
 
 if __name__ == '__main__':
     unittest.main()
