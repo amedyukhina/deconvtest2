@@ -1,4 +1,5 @@
 import warnings
+from typing import Union
 
 import numpy as np
 from scipy.signal import fftconvolve
@@ -32,7 +33,7 @@ def convolve(img: np.ndarray, psf: np.ndarray):
     return fftconvolve(img, psf, mode='full')
 
 
-def poisson_noise(img: np.ndarray, snr: float):
+def poisson_noise(img: np.ndarray, snr: Union[int, float]):
     """
     Add Poisson noise to the input image.
 

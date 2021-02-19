@@ -7,8 +7,8 @@ from ...core.utils.conversion import convert_size
 from ...core.utils.utils import check_type
 
 
-def ellipsoid(size: Union[float, list, np.ndarray],
-              voxel_size: Union[float, list, np.ndarray] = 1.,
+def ellipsoid(size: Union[int, float, list, np.ndarray],
+              voxel_size: Union[int, float, list, np.ndarray] = 1.,
               theta: float = 0,
               phi: float = 0):
     """

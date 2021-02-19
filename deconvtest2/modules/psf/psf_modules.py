@@ -7,7 +7,8 @@ from ...core.utils.conversion import convert_size
 from ...core.utils.utils import check_type
 
 
-def gaussian(sigma: float, aspect: float = 1., voxel_size: Union[float, list, np.ndarray] = 1.):
+def gaussian(sigma: Union[int, float], aspect: Union[int, float] = 1.,
+             voxel_size: Union[int, float, list, np.ndarray] = 1.):
     """
     Generates a Point Spread Function (PSF) as a 3D Gaussian with given standard deviation and aspect ratio.
 
