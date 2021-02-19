@@ -39,6 +39,8 @@ class Module:
     def add_parameters(self, arg_spec):
         names = arg_spec.args
         defaults = arg_spec.defaults
+        if defaults is None:
+            defaults = []
         types = arg_spec.annotations
         n_non_optional_parameters = len(names) - len(defaults)
         self.parameters = []
