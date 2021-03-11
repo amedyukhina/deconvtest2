@@ -17,7 +17,8 @@ setup(
               'deconvtest2.core.utils',
               'deconvtest2.framework',
               'deconvtest2.framework.module',
-              'deconvtest2.framework.step'
+              'deconvtest2.framework.step',
+              'deconvtest2.framework.workflow'
               ],
     license='BSD-3-Clause',
     include_package_data=True,
