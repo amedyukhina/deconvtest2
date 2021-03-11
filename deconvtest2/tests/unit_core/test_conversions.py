@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.core.utils.conversion import convert_size, unify_shape
+
+from ...core.utils.conversion import convert_size, unify_shape
 
 
 @ddt

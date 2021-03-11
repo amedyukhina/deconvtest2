@@ -1,8 +1,7 @@
 import importlib
 
-from deconvtest2.core.utils.utils import list_modules
-
 from ..module.parameter import Parameter
+from ...core.utils.utils import list_modules
 
 
 class Module:

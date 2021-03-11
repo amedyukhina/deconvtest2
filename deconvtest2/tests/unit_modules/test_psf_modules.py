@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.modules.psf.psf_modules import gaussian
+
+from ...modules.psf.psf_modules import gaussian
 
 
 @ddt

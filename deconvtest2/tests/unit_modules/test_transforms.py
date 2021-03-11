@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.modules.transforms.transform_modules import convolve, poisson_noise
+
+from ...modules.transforms.transform_modules import convolve, poisson_noise
 
 
 @ddt

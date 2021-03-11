@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.modules.evaluation.evaluation_modules import rmse
+
+from ...modules.evaluation.evaluation_modules import rmse
 
 
 @ddt

@@ -2,8 +2,9 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.core.shapes.shapes import gaussian, ellipsoid
-from deconvtest2.core.utils.measure import bounding_box
+
+from ...core.shapes.shapes import gaussian, ellipsoid
+from ...core.utils.measure import bounding_box
 
 
 def sum_of_border_pixels(arr, margin=3):

@@ -1,10 +1,11 @@
 import unittest
 import warnings
 
-import deconvtest2.core as deconvtest2_core
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.core.utils.utils import check_type, list_modules, modules_to_json
+
+from ... import core as deconvtest2_core
+from ...core.utils.utils import check_type, list_modules, modules_to_json
 
 
 @ddt

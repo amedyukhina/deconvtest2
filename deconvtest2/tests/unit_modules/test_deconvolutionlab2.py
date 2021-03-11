@@ -4,11 +4,12 @@ import warnings
 
 import numpy as np
 from ddt import ddt
-from deconvtest2.modules.deconvolution.deconvolutionlab2 import regularized_inverse_filter
-from deconvtest2.modules.ground_truth.ground_truth_modules import ellipsoid
-from deconvtest2.modules.psf.psf_modules import gaussian
-from deconvtest2.modules.transforms.transform_modules import convolve
 from skimage import io
+
+from ...modules.deconvolution.deconvolutionlab2 import regularized_inverse_filter
+from ...modules.ground_truth.ground_truth_modules import ellipsoid
+from ...modules.psf.psf_modules import gaussian
+from ...modules.transforms.transform_modules import convolve
 
 
 @ddt

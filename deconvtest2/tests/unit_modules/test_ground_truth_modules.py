@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.modules.ground_truth.ground_truth_modules import ellipsoid
+
+from ...modules.ground_truth.ground_truth_modules import ellipsoid
 
 
 @ddt

@@ -1,4 +1,4 @@
-from deconvtest2.framework.module.module import Module
+from ...framework.module.module import Module
 
 
 class Evaluation(Module):

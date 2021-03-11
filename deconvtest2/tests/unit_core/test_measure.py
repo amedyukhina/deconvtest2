@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt
-from deconvtest2.core.utils.measure import bounding_box
+
+from ...core.utils.measure import bounding_box
 
 
 @ddt
