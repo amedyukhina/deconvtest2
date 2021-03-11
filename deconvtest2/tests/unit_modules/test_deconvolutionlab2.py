@@ -1,5 +1,6 @@
 import os
 import unittest
+import warnings
 
 import numpy as np
 from ddt import ddt
@@ -21,10 +22,13 @@ class TestRIF(unittest.TestCase):
         xconv = convolve(x, psf)
         if not os.path.exists(data_path):
             os.makedirs(data_path)
-        io.imsave(data_path + 'psf.tif', (psf * 255).astype(np.uint8))
-        io.imsave(data_path + 'conv.tif', xconv.astype(np.uint16))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            io.imsave(data_path + 'psf.tif', (psf * 255).astype(np.uint8))
+            io.imsave(data_path + 'conv.tif', xconv.astype(np.uint16))
         regularized_inverse_filter(0.1, data_path, plugin_path)
         self.assertTrue(os.path.exists(data_path + 'deconv.tif'))
 
-    if __name__ == '__main__':
-        unittest.main()
+
+if __name__ == '__main__':
+    unittest.main()

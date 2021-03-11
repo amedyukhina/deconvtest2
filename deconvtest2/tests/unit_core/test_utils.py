@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 import deconvtest2.core as deconvtest2_core
 import numpy as np
@@ -27,7 +28,9 @@ class TestUtils(unittest.TestCase):
         self.assertRaises(TypeError, check_type, names, variables, types)
 
     def test_list_modules(self):
-        modules = list_modules(deconvtest2_core)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            modules = list_modules(deconvtest2_core)
         modules = [module[0].__name__ for module in modules]
         self.assertIn('__list_modules', modules)
         self.assertIn('list_modules', modules)

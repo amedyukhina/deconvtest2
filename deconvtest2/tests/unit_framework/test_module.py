@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 import numpy as np
 from ddt import ddt, data
@@ -18,28 +19,36 @@ class TestModuleImport(unittest.TestCase):
         'ellipsoid'
     )
     def test_method(self, method):
-        module = Module(method)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            module = Module(method)
         self.assertIsNotNone(module.method)
 
     @data(
         'regularized_inverse_filter',
     )
     def test_deconvolution_method(self, method):
-        module = Deconvolution(method)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            module = Deconvolution(method)
         self.assertIsNotNone(module.method)
 
     @data(
         'gaussian',
     )
     def test_psf_method(self, method):
-        module = PSF(method)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            module = PSF(method)
         self.assertIsNotNone(module.method)
 
     @data(
         'ellipsoid',
     )
     def test_gt_method(self, method):
-        module = GroundTruth(method)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            module = GroundTruth(method)
         self.assertIsNotNone(module.method)
 
     @data(
