@@ -37,14 +37,14 @@ def __list_modules(package_name):
     return ret
 
 
-def list_modules(package):
+def list_modules(package, module_type=inspect.isfunction):
     package_name = package.__name__
     modules = list(__list_modules(package_name))
     functions = []
     for module in modules:
         if len(module.split('tests')) == 1:
             m = importlib.import_module(module)
-            module_functions = inspect.getmembers(m, inspect.isfunction)
+            module_functions = inspect.getmembers(m, module_type)
             for function in module_functions:
                 func_info = inspect.getfullargspec(function[1])
                 if function[1].__module__.startswith(package_name):
