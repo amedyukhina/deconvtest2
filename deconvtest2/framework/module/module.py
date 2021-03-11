@@ -17,6 +17,7 @@ class Module:
         self.method = None
         self.arg_spec = None
         self.parameters = []
+        self.result = None
 
         self.import_method(method)
         if self.arg_spec is not None:
@@ -82,5 +83,6 @@ class Module:
     def run(self, **parameters):
         self.parameter_values = parameters
         self.verify_parameters()
-        return self.method(**self.parameter_values)
+        self.result = self.method(**self.parameter_values)
+        return self.result
 
