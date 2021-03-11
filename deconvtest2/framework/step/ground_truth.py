@@ -1,4 +1,4 @@
-from ..module.image import Image
+from deconvtest2.framework.module.image import Image
 
 
 class GroundTruth(Image):

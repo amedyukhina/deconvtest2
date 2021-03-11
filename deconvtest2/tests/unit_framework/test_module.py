@@ -3,12 +3,12 @@ import warnings
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.framework.module.deconvolution import Deconvolution
-from deconvtest2.framework.module.evaluation import Evaluation
-from deconvtest2.framework.module.ground_truth import GroundTruth
+from deconvtest2.framework.step.deconvolution import Deconvolution
+from deconvtest2.framework.step.evaluation import Evaluation
+from deconvtest2.framework.step.ground_truth import GroundTruth
 from deconvtest2.framework.module.module import Module
-from deconvtest2.framework.module.psf import PSF
-from deconvtest2.framework.module.transform import Transform
+from deconvtest2.framework.step.psf import PSF
+from deconvtest2.framework.step.transform import Transform
 
 
 @ddt

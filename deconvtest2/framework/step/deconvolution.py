@@ -1,4 +1,4 @@
-from ..module.module import Module
+from deconvtest2.framework.module.module import Module
 
 
 class Deconvolution(Module):
