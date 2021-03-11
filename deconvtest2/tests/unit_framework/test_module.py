@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from ddt import ddt, data
 from deconvtest2.framework.module.module import Module
-from deconvtest2.framework.module.deconvolution_module import DeconvolutionModule
+from deconvtest2.framework.module.deconvolution import Deconvolution
 
 
 @ddt
@@ -21,7 +21,7 @@ class TestModuleImport(unittest.TestCase):
         'regularized_inverse_filter',
     )
     def test_deconvolution_method(self, method):
-        module = DeconvolutionModule(method)
+        module = Deconvolution(method)
         self.assertIsNotNone(module.method)
 
     @data(
@@ -35,7 +35,7 @@ class TestModuleImport(unittest.TestCase):
         'fake_method',
     )
     def test_deconvolution_method_err(self, method):
-        self.assertRaises(ValueError, DeconvolutionModule, method)
+        self.assertRaises(ValueError, Deconvolution, method)
 
     def test_module_run(self):
         m = Module('ellipsoid')
