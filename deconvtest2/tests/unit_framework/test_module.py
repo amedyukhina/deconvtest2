@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 from ddt import ddt, data
-from deconvtest2.framework.module.module import Module
 from deconvtest2.framework.module.deconvolution import Deconvolution
+from deconvtest2.framework.module.module import Module
 
 
 @ddt

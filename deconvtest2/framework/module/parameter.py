@@ -1,9 +1,8 @@
-
-
 class Parameter:
     """
     Abstract parameter class
     """
+
     def __init__(self, name, default_value=None, value=None, optional=True, parameter_type=None, doc=''):
         """
 
@@ -40,4 +39,3 @@ class Parameter:
                                                                                              self.type,
                                                                                              self.optional,
                                                                                              self.default_value)
-

@@ -1,5 +1,7 @@
 import importlib
+
 from deconvtest2.core.utils.utils import list_modules
+
 from ..module.parameter import Parameter
 
 
@@ -7,6 +9,7 @@ class Module:
     """
     Abstract module class
     """
+
     def __init__(self, method: str, parameters: dict = None, parent_name: str = 'deconvtest2.modules'):
         if parameters is None:
             self.parameter_values = dict()
@@ -85,4 +88,3 @@ class Module:
         self.verify_parameters()
         self.result = self.method(**self.parameter_values)
         return self.result
-
