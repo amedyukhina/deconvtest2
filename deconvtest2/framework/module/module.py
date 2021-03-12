@@ -9,7 +9,7 @@ class Module:
     Abstract module class
     """
 
-    def __init__(self, method: str, parameters: dict = None, parent_name: str = 'deconvtest2.modules'):
+    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest2.modules'):
         if parameters is None:
             self.parameter_values = dict()
         else:
@@ -21,23 +21,30 @@ class Module:
         self.parameters = []
         self.result = None
 
-        self.import_method(method)
+        if method is not None:
+            self.import_method(method)
         if self.arg_spec is not None:
             self.add_parameters(self.arg_spec)
 
-    def import_method(self, method):
+    def list_available_modules(self):
         parent_module = importlib.import_module(self.parent_name)
         available_modules = list_modules(parent_module)
+        return available_modules
+
+    def list_available_modules_names(self):
+        available_modules = self.list_available_modules()
+        return [module[0].__name__ for module in available_modules]
+
+    def import_method(self, method):
+        available_modules = self.list_available_modules()
         for module in available_modules:  # find a module with a matching name
             if module[0].__name__ == method:
                 self.method = module[0]
                 self.arg_spec = module[1]
 
         if self.method is None:  # raise an error if no matching module found
-            modules = [module[0].__name__ for module in available_modules]
-            raise ValueError('{} is not a valid {} module; available modules are: {}'.format(method,
-                                                                                             self.parent_name,
-                                                                                             modules))
+            modules = self.list_available_modules_names()
+            raise ValueError(rf'{method} is not a valid {self.parent_name} module; available modules are: {modules}')
 
     def add_parameters(self, arg_spec):
         names = arg_spec.args
@@ -70,17 +77,16 @@ class Module:
                 else:
                     valid_types = list(parameter.type.__args__)
                 if not type(self.parameter_values[parameter.name]) in valid_types:
-                    raise ValueError('{} is not a valid type for {}; '
-                                     'valid types are: {}'.format(type(self.parameter_values[parameter.name]),
-                                                                  parameter.name,
-                                                                  valid_types))
+                    raise ValueError(
+                        rf'{type(self.parameter_values[parameter.name])} is not a valid type for {parameter.name}; '
+                        'valid types are: {valid_types}')
 
             else:
                 # add default value if available, otherwise raise error
                 if parameter.optional is True:
                     self.parameter_values[parameter.name] = parameter.default_value
                 else:
-                    raise ValueError('Parameter `{}` is mandatory, please provide a value!'.format(parameter.name))
+                    raise ValueError(rf'Parameter `{parameter.name}` is mandatory, please provide a value!')
 
     def run(self, **parameters):
         self.parameter_values = parameters
