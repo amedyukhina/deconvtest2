@@ -10,7 +10,7 @@ class Step:
     """
 
     def __init__(self, step_name: str, method: str = None):
-        self.step_name = step_name
+        self.name = step_name
         self.method = method
 
         steps = list_modules(step, module_type=inspect.isclass)
@@ -23,7 +23,17 @@ class Step:
                 rf'{step_name} is not a valid step! Valid steps are: {[st[0].__name__ for st in steps]}')
 
     def __repr__(self):
-        string = self.step_name
+        string = self.name
         if self.method is not None:
             string = string + ', ' + self.method
         return string
+
+    def list_available_methods(self):
+        module = self.step()
+        return module.list_available_modules_names()
+
+    def add_method(self, method: str):
+        if method in self.list_available_methods():
+            self.method = method
+        else:
+            raise ValueError(rf'{method} is not a valid method! Valid methods are: {self.list_available_methods()}')
