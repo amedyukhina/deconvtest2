@@ -1,5 +1,6 @@
 import unittest
 import warnings
+import os
 
 from ddt import ddt, data
 
@@ -64,6 +65,35 @@ class TestStep(unittest.TestCase):
             warnings.simplefilter("ignore")
             s = Step('PSF')
             self.assertIsNone(s.list_parameters())
+
+    def test_specify_parameters_missing_argument(self):
+        s = Step('PSF', 'gaussian')
+        self.assertRaises(ValueError, s.specify_parameters, aspect=[2, 3])
+
+    def test_specify_parameters_no_module(self):
+        s = Step('PSF')
+        self.assertRaises(ModuleNotFoundError, s.specify_parameters, sigma=[3])
+
+    def test_specify_parameters(self):
+        s = Step('PSF', 'gaussian')
+        params = s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
+        self.assertEqual(len(params), 3)
+        params = s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='permute')
+        self.assertEqual(len(params), 9)
+
+    def test_add_parameters(self):
+        s = Step('PSF', 'gaussian')
+        s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
+        s.add_to_parameter_table(sigma=4)
+        self.assertEqual(len(s.parameters), 4)
+
+    def test_saving_parameters(self):
+        s = Step('PSF', 'gaussian')
+        path = 'test.csv'
+        s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
+        s.save_parameters(path)
+        self.assertTrue(os.path.exists(path))
+        os.remove(path)
 
 
 if __name__ == '__main__':
