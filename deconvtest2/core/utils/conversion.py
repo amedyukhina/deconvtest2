@@ -1,4 +1,5 @@
 from typing import Union
+import re
 
 import numpy as np
 
@@ -58,3 +59,65 @@ def unify_shape(x: np.ndarray, y: np.ndarray):
         out.append(np.pad(arr, pad_width=pad_width, mode='constant', constant_values=0))
 
     return out
+
+
+def list_to_keys(params: dict, sep: str = '_'):
+    """
+    Convert list values in a dictionary to individual dictionary entries.
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary to convert
+    sep : str, optional
+        Separator to separate indices.
+        Default is '_'
+
+    Returns
+    -------
+    dict:
+        Converted dictionary
+
+    """
+    params_converted = dict()
+    for key in params.keys():
+        if type(params[key]) in [list, np.array]:
+            for i, value in enumerate(params[key]):
+                params_converted[key + sep + str(i)] = value
+        else:
+            params_converted[key] = params[key]
+    return params_converted
+
+
+def keys_to_list(params: dict, sep: str = '_'):
+    """
+    Convert key values in a dictionary that have a common stem to one key with a list value.
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary to convert
+    sep : str, optional
+        Separator that separates indices.
+        Default is '_'
+
+    Returns
+    -------
+    dict:
+        Converted dictionary
+
+    """
+    params_converted = dict()
+    p = re.compile(rf'(.+){sep}\d')
+    keys = []
+    values = []
+    for key in params.keys():
+        if len(p.findall(key)) > 0:
+            keys.append(key)
+            values.append(params[key])
+        else:
+            params_converted[key] = params[key]
+    if len(keys) > 1:
+        params_converted[p.findall(keys[0])[0]] = values
+    return params_converted
+

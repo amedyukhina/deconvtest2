@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from ddt import ddt, data
 
-from ...core.utils.conversion import convert_size, unify_shape
+from ...core.utils.conversion import convert_size, unify_shape, list_to_keys, keys_to_list
 
 
 @ddt
@@ -29,6 +29,16 @@ class TestConversion(unittest.TestCase):
         x, y = unify_shape(x, y)
         self.assertSequenceEqual(list(x.shape), shape)
         self.assertSequenceEqual(list(y.shape), shape)
+
+    def test_dict_conversion(self):
+        params = dict({'x': 3,
+                       'size': [2, 3, 5]})
+        params_converted = keys_to_list(list_to_keys(params))
+        for key in params.keys():
+            if type(params[key]) is list:
+                self.assertSequenceEqual(params[key], params_converted[key])
+            else:
+                self.assertEqual(params[key], params_converted[key])
 
 
 if __name__ == '__main__':
