@@ -15,6 +15,15 @@ def check_type(names, variables, types):
             raise TypeError("Type of '{}' must be one of: {}; '{}' provided!".format(name, t, type(var).__name__))
 
 
+def is_valid_type(variable, valid_type):
+    if type(valid_type) is type:
+        valid_types = [valid_type]
+    else:
+        valid_types = list(valid_type.__args__)
+
+    return type(variable) in valid_types
+
+
 def __list_modules(package_name):
     spec = importlib.util.find_spec(package_name)
     if spec is None:

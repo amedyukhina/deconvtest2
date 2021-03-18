@@ -1,11 +1,12 @@
 import unittest
 import warnings
+from typing import Union
 
 import numpy as np
 from ddt import ddt, data
 
 from ... import core as deconvtest2_core
-from ...core.utils.utils import check_type, list_modules, modules_to_json
+from ...core.utils.utils import check_type, list_modules, modules_to_json, is_valid_type
 
 
 @ddt
@@ -19,6 +20,22 @@ class TestUtils(unittest.TestCase):
     def test_type_check(self, case):
         names, variables, types = case
         check_type(names, variables, types)
+
+    @data(
+        (2, int),
+        (3.5, Union[float, int])
+    )
+    def test_valid_type(self, case):
+        variable, valid_type = case
+        self.assertTrue(is_valid_type(variable, valid_type))
+
+    @data(
+        (2, str),
+        ('3.5', Union[float, int])
+    )
+    def test_valid_type(self, case):
+        variable, valid_type = case
+        self.assertFalse(is_valid_type(variable, valid_type))
 
     @data(
         (['var1', 'var2', 'var3'], [3, [2, 4.5], 'aiosghfr'], [int, [int, list], float]),

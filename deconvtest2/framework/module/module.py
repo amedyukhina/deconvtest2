@@ -1,7 +1,7 @@
 import importlib
 
 from ..module.parameter import Parameter
-from ...core.utils.utils import list_modules
+from ...core.utils.utils import list_modules, is_valid_type
 
 
 class Module:
@@ -72,11 +72,7 @@ class Module:
     def verify_parameters(self):
         for parameter in self.parameters:
             if parameter.name in self.parameter_values.keys():
-                if type(parameter.type) is type:
-                    valid_types = [parameter.type]
-                else:
-                    valid_types = list(parameter.type.__args__)
-                if not type(self.parameter_values[parameter.name]) in valid_types:
+                if not is_valid_type(self.parameter_values[parameter.name], parameter.type):
                     raise ValueError(
                         rf'{type(self.parameter_values[parameter.name])} is not a valid type for {parameter.name}; '
                         'valid types are: {valid_types}')
