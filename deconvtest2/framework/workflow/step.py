@@ -1,6 +1,7 @@
 import inspect
 import warnings
 import itertools
+import json
 
 import pandas as pd
 import numpy as np
@@ -32,11 +33,16 @@ class Step:
             raise ValueError(
                 rf'{step_name} is not a valid step! Valid steps are: {[st[0].__name__ for st in steps]}')
 
+    def to_dict(self):
+        step = dict()
+        step['name'] = self.name
+        step['method'] = self.method
+        step['parameter_path'] = self.path
+        step['number of parameter combinations'] = len(self.parameters)
+        return step
+
     def __repr__(self):
-        string = self.name
-        if self.method is not None:
-            string = string + ', ' + self.method
-        return string
+        return json.dumps(self.to_dict(), indent=4)
 
     def list_available_methods(self):
         module = self.step()
@@ -202,4 +208,6 @@ class Step:
             if not os.path.exists(os.path.dirname(path)) and os.path.dirname(path) != '':
                 os.makedirs(os.path.dirname(path))
             self.parameters.to_csv(path, index=False)
+
+
 
