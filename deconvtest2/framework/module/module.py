@@ -75,7 +75,7 @@ class Module:
                 if not is_valid_type(self.parameter_values[parameter.name], parameter.type):
                     raise ValueError(
                         rf'{type(self.parameter_values[parameter.name])} is not a valid type for {parameter.name}; '
-                        'valid types are: {valid_types}')
+                        f'valid types are: {parameter.type}')
 
             else:
                 # add default value if available, otherwise raise error
