@@ -55,6 +55,16 @@ class TestStep(unittest.TestCase):
         w.add_step(Step('PSF', 'gaussian'))
         self.assertEqual(len(w.steps), 1)
 
+    def test_list_parameter(self):
+        s = Step('PSF', 'gaussian')
+        self.assertEqual(len(s.list_parameters()), 3)
+
+    def test_list_parameters_emtpy(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s = Step('PSF')
+            self.assertIsNone(s.list_parameters())
+
 
 if __name__ == '__main__':
     unittest.main()
