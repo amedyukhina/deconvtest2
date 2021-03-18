@@ -52,7 +52,7 @@ class TestStep(unittest.TestCase):
 
     def test_add_step(self):
         w = Workflow()
-        w.add_step('PSF', 'gaussian')
+        w.add_step(Step('PSF', 'gaussian'))
         self.assertEqual(len(w.steps), 1)
 
 
