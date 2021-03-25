@@ -9,8 +9,8 @@ from ...core.utils.utils import check_type
 
 def ellipsoid(size: Union[int, float, list, np.ndarray],
               voxel_size: Union[int, float, list, np.ndarray] = 1.,
-              theta: float = 0,
-              phi: float = 0):
+              theta: Union[int, float] = 0,
+              phi: Union[int, float] = 0):
     """
     Generates a synthetic object of ellipsoidal shape.
 
