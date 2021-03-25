@@ -165,9 +165,26 @@ class TestStep(unittest.TestCase):
         s.specify_parameters(img='pipeline', psf='pipeline')
         w.add_step(s, input_step=[0, 1])
 
-        print(w.steps)
+        s = Step('Transform', 'poisson_noise')
+        s.specify_parameters(img='pipeline', snr=[2, 5, 10], base_name='noise')
+        path_noise = 'params_noise.csv'
+        s.save_parameters(path_noise)
+        w.add_step(s)
 
-        print(s.list_parameters())
+        s = Step('Evaluation', 'rmse')
+        s.specify_parameters(img1='pipeline', img2='pipeline')
+        w.add_step(s, input_step=[0, 3])
+
+        path = 'workflow.json'
+        w.save(path)
+        print(w.steps)
+        print(type(w.steps[0]))
+
+        w2 = Workflow()
+        w2.load(path)
+        # print(w2)
+        print(w2.steps)
+        print(type(w2.steps[0]))
 
 
 if __name__ == '__main__':
