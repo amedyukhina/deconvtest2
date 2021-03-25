@@ -1,14 +1,14 @@
 import inspect
-import warnings
 import itertools
 import json
-
-import pandas as pd
-import numpy as np
 import os
+import warnings
 
-from ...core.utils.utils import list_modules, is_valid_type
+import numpy as np
+import pandas as pd
+
 from ...core.utils.conversion import list_to_keys
+from ...core.utils.utils import list_modules, is_valid_type
 from ...framework import step as workflow_steps
 
 
@@ -62,41 +62,16 @@ class Step:
             module = self.step(self.method)
             return module.parameters
 
-    def specify_parameters(self, mode: str = 'permute', overwrite: bool = True, **parameters):
-        """
-        Specify the list of parameters for the step.
-
-        Parameters
-        ----------
-        mode : str, optional
-            'permute' or 'align'
-            If 'align', the parameter values for each parameter will be aligned.
-            If 'permute', the combination of all possible parameter values will be generated.
-            For 'align', the list of values for each parameter must have the same length.
-            Default is 'permute'.
-        overwrite : bool, optional
-            If True, a new table will be created.
-            If False, the generate table will be appended to the existing table.
-            Default is True.
-        parameters : key value
-            Parameter names and values.
-            For values, provide one value or list.
-            If `mode` is set to 'align', the length of all provided lists must be equal.
-
-        Returns
-        -------
-        pandas.DataFrame()
-            Table with parameter values
-        """
-        if mode not in ['align', 'permute']:
-            raise ValueError(rf'{mode} is not a valid mode; must be "align" or "permute"')
+    def get_method(self):
         if self.method is None:
             raise ModuleNotFoundError(rf'No method is defined for step {self.name} to specify parameters!')
         else:
             module = self.step(self.method)
             module_param_names = [param.name for param in module.parameters]
-        if overwrite:
-            self.parameters = pd.DataFrame()
+        return module, module_param_names
+
+    def __get_parameter_lists(self, parameters):
+        module, module_param_names = self.get_method()
 
         for key in parameters.keys():
             if key not in module_param_names:
@@ -137,6 +112,11 @@ class Step:
                 else:
                     param_values_single[param.name] = parameters[param.name][0]
 
+        return param_values_list, param_values_single
+
+    def __get_param_table(self, parameters, mode):
+        param_values_list, param_values_single = self.__get_parameter_lists(parameters)
+
         if mode == 'align':
             df_parameters = pd.DataFrame()
             length = len(param_values_list[list(param_values_list.keys())[0]])
@@ -153,51 +133,65 @@ class Step:
         for key in param_values_single.keys():
             df_parameters[key] = param_values_single[key]
 
-        self.parameters = pd.concat([self.parameters, df_parameters], ignore_index=True)
         return df_parameters
 
-    def add_to_parameter_table(self, **parameters):
+    def __add_ids(self, df_parameters, base=None, pos=4, sep=''):
+        if base is None:
+            base = self.name
+        if df_parameters is not None:
+            names = [rf"{base}{sep}" + str(i).zfill(pos) for i in range(len(df_parameters))]
+            df_parameters['ID'] = names
+        return df_parameters
+
+    def specify_parameters(self, mode: str = 'permute', overwrite: bool = True,
+                           base_name: str = None, sep: str = '', pos: int = 4,
+                           **parameters):
         """
-        Add parameter values to existing parameter table.
+        Specify the list of parameters for the step.
 
         Parameters
         ----------
+        mode : str, optional
+            'permute' or 'align'
+            If 'align', the parameter values for each parameter will be aligned.
+            If 'permute', the combination of all possible parameter values will be generated.
+            For 'align', the list of values for each parameter must have the same length.
+            Default is 'permute'.
+        overwrite : bool, optional
+            If True, a new table will be created.
+            If False, the generate table will be appended to the existing table.
+            Default is True.
+        base_name : str, optional
+            Base name to label step items.
+            If None, the step name is used as the `base_name`
+            Default is None.
+        sep : str, optional
+            Separator between the base_name and the numeric ID.
+            Default is '' (no separator).
+        pos : int, optional
+            Number of digit positions used for numeric ID.
+            Default is 4.
         parameters : key value
             Parameter names and values.
+            For values, provide one value or list.
+            If `mode` is set to 'align', the length of all provided lists must be equal.
 
         Returns
         -------
-        pandas.DataFrame:
-            Updated parameter table
+        pandas.DataFrame()
+            Table with parameter values
         """
-        if self.method is None:
-            raise ModuleNotFoundError(rf'No method is defined for step {self.name} to specify parameters!')
-        else:
-            module = self.step(self.method)
-            module_param_names = [param.name for param in module.parameters]
+        if mode not in ['align', 'permute']:
+            raise ValueError(rf'{mode} is not a valid mode; must be "align" or "permute"')
 
-        for key in parameters.keys():
-            if key not in module_param_names:
-                warnings.warn(rf'Parameter "{key}" is not in the list of parameters for module "{self.method}"'
-                              rf'and will not be included!')
-        for param in module.parameters:
-            if param.name not in parameters.keys():
-                if param.optional is False:
-                    raise ValueError(rf'Parameter {param.name} is mandatory!')
-                else:
-                    parameters[param.name] = param.default_value
-            else:
-                if not is_valid_type(parameters[param.name], param.type):
-                    raise ValueError(rf'{type(parameters[param.name])} is not a valid type for {param.name}; '
-                                     f'valid types are: {param.type}')
+        df_parameters = self.__get_param_table(parameters, mode)
+        df_parameters = self.__add_ids(df_parameters, base=base_name, pos=pos, sep=sep)
 
-        parameters = list_to_keys(parameters)
-        df_parameters = pd.DataFrame()
-        for key in parameters.keys():
-            df_parameters[key] = [parameters[key]]
+        if overwrite:
+            self.parameters = pd.DataFrame()
 
         self.parameters = pd.concat([self.parameters, df_parameters], ignore_index=True)
-        return self.parameters
+        return df_parameters
 
     def save_parameters(self, path: str = None):
         if path is not None:
@@ -209,6 +203,3 @@ class Step:
             if not os.path.exists(os.path.dirname(path)) and os.path.dirname(path) != '':
                 os.makedirs(os.path.dirname(path))
             self.parameters.to_csv(path, index=False)
-
-
-

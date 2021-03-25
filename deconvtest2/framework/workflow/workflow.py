@@ -2,9 +2,9 @@ import inspect
 import json
 import os
 
+from .step import Step
 from ...core.utils.utils import list_modules
 from ...framework import step as workflow_steps
-from .step import Step
 
 
 def list_available_steps():
@@ -17,6 +17,7 @@ class Workflow:
     """
     Workflow class
     """
+
     def __init__(self, name: str = 'New Workflow'):
         self.name = name
         self.available_steps = list_available_steps()
@@ -54,5 +55,3 @@ class Workflow:
         self.name = workflow['name']
         self.path = path
         self.steps = workflow['steps']
-
-

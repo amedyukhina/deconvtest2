@@ -1,5 +1,5 @@
-from typing import Union
 import re
+from typing import Union
 
 import numpy as np
 
@@ -120,4 +120,3 @@ def keys_to_list(params: dict, sep: str = '_'):
     if len(keys) > 1:
         params_converted[p.findall(keys[0])[0]] = values
     return params_converted
-

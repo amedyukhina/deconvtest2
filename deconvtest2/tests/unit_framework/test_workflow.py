@@ -1,7 +1,8 @@
+import os
 import unittest
 import warnings
-import os
 
+import numpy as np
 from ddt import ddt, data
 
 from ...framework.workflow.step import Step
@@ -84,7 +85,7 @@ class TestStep(unittest.TestCase):
     def test_add_parameters(self):
         s = Step('PSF', 'gaussian')
         s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
-        s.add_to_parameter_table(sigma=4)
+        s.specify_parameters(sigma=4, overwrite=False)
         self.assertEqual(len(s.parameters), 4)
 
     def test_saving_parameters(self):
@@ -111,6 +112,16 @@ class TestStep(unittest.TestCase):
         self.assertTrue(os.path.exists(path))
         os.remove(path)
         os.remove(path_param1)
+
+    def test_workflow(self):
+        w = Workflow(name='test workflow')
+
+        s = Step('GroundTruth', 'ellipsoid')
+        path_gt = 'params_ellipsoid.csv'
+        s.specify_parameters(size=[10, 15], voxel_size=0.5,
+                             theta=[0, np.pi / 2], phi=[0, np.pi, np.pi * 4 / 3], mode='permute', base_name='GT')
+        s.save_parameters(path_gt)
+        w.add_step(s)
 
 
 if __name__ == '__main__':
