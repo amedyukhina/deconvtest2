@@ -123,6 +123,7 @@ class Step:
                     if not is_valid_type(parameters[param.name], param.type):
                         raise ValueError(rf'{type(parameters[param.name])} is not a valid type for {param.name}; '
                                          f'valid types are: {param.type}')
+                    parameters[param.name] = [parameters[param.name]]
 
                 if is_valid_type([], param.type) and len(parameters[param.name]) <= 3:
                     warnings.warn(rf'Since list is a valid type for parameter {param.name} and '
@@ -134,7 +135,7 @@ class Step:
                 if is_list:
                     param_values_list[param.name] = parameters[param.name]
                 else:
-                    param_values_single[param.name] = parameters[param.name]
+                    param_values_single[param.name] = parameters[param.name][0]
 
         if mode == 'align':
             df_parameters = pd.DataFrame()
