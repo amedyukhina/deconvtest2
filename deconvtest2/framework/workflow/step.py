@@ -110,6 +110,10 @@ class Step:
                     raise ValueError(rf'Parameter {param.name} is mandatory! '
                                      '\nIf the parameter is an input image that will be '
                                      'generated in another step of the pipeline, specify "pipeline"')
+
+            elif is_valid_type(np.ones([2, 2, 2]), param.type) and type(parameters[param.name]) is str and \
+                    parameters[param.name] == 'pipeline':
+                continue
             else:
                 if type(parameters[param.name]) in [list, np.ndarray]:
                     is_list = True
@@ -122,17 +126,14 @@ class Step:
                                              )
                 else:
                     is_list = False
-                    if not is_valid_type(parameters[param.name], param.type):
-                        if is_valid_type(np.ones([2, 2, 2]), param.type) and type(parameters[param.name]) is str and \
-                                parameters[param.name] == 'pipeline':
-                            pass
-                        else:
-                            raise ValueError(rf'{type(parameters[param.name])} is not a valid type for {param.name}; '
-                                             f'valid types are: {param.type}.'
-                                             '\nIf the parameter is an input image that will be '
-                                             'generated in another step of the pipeline, specify "pipeline"'
-                                             )
-                    parameters[param.name] = [parameters[param.name]]
+                    if is_valid_type(parameters[param.name], param.type):
+                        parameters[param.name] = [parameters[param.name]]
+                    else:
+                        raise ValueError(rf'{type(parameters[param.name])} is not a valid type for {param.name}; '
+                                         f'valid types are: {param.type}.'
+                                         '\nIf the parameter is an input image that will be '
+                                         'generated in another step of the pipeline, specify "pipeline"'
+                                         )
 
                 if is_valid_type([], param.type) and len(parameters[param.name]) <= 3:
                     warnings.warn(rf'Since list is a valid type for parameter {param.name} and '
