@@ -47,3 +47,12 @@ class Workflow:
                 os.makedirs(os.path.dirname(path))
             with open(path, 'w') as f:
                 json.dump(self.to_dict(), f)
+
+    def load(self, path: str):
+        with open(path) as f:
+            workflow = json.load(f)
+        self.name = workflow['name']
+        self.path = path
+        self.steps = workflow['steps']
+
+

@@ -106,6 +106,11 @@ class TestStep(unittest.TestCase):
         w.add_step(Step('PSF', 'gaussian'))
         path = 'test.json'
         w.save(path)
+
+        w2 = Workflow()
+        w2.load(path)
+        print(w2.name)
+        print(w2.steps)
         self.assertTrue(os.path.exists(path))
         os.remove(path)
 
