@@ -1,7 +1,7 @@
-from ...framework.module.module import Module
+from ...framework.step.transform import Transform
 
 
-class Deconvolution(Module):
+class Deconvolution(Transform):
     """
     Deconvolution module
     """

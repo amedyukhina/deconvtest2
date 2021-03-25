@@ -1,7 +1,7 @@
-from ...framework.module.image import Image
+from ...framework.module.inputmodule import InputModule
 
 
-class GroundTruth(Image):
+class GroundTruth(InputModule):
     """
     Ground truth module
     """
