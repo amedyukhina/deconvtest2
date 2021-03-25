@@ -50,6 +50,16 @@ class Step:
         step['input step'] = self.input_step
         return step
 
+    def from_dict(self, step_dict):
+        self.name = step_dict['name']
+        self.method = step_dict['method']
+        self.path = step_dict['parameter_path']
+        self.n_inputs = step_dict['number of inputs']
+        self.n_outputs = step_dict['number of outputs']
+        self.input_step = step_dict['input step']
+        if step_dict['parameter_path'] is not None:
+            self.parameters = self.load_parameters(step_dict['parameter_path'])
+
     def __repr__(self):
         return json.dumps(self.to_dict(), indent=4)
 
@@ -227,3 +237,7 @@ class Step:
             if not os.path.exists(os.path.dirname(path)) and os.path.dirname(path) != '':
                 os.makedirs(os.path.dirname(path))
             self.parameters.to_csv(path, index=False)
+
+    def load_parameters(self, path:str):
+        self.parameters = pd.read_csv(path)
+        return self.parameters

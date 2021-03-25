@@ -77,4 +77,8 @@ class Workflow:
             workflow = json.load(f)
         self.name = workflow['name']
         self.path = path
-        self.steps = workflow['steps']
+        self.steps = []
+        for step in workflow['steps']:
+            s = Step(step['name'])
+            s.from_dict(step)
+            self.steps.append(s)
