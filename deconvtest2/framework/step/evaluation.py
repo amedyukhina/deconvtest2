@@ -10,3 +10,5 @@ class Evaluation(Module):
         super(Evaluation, self).__init__(method=method,
                                          parameters=parameters,
                                          parent_name='deconvtest2.modules.evaluation')
+        self.n_inputs = 2
+        self.n_outputs = 0
