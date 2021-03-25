@@ -19,12 +19,14 @@ class Step:
 
     def __init__(self, step_name: str, method: str = None):
         self.name = step_name
-        self.method = method
         self.parameters = pd.DataFrame()
         self.path = None
+        self.n_inputs = None
+        self.n_outputs = None
+        self.method = None
+        self.step = None
 
         steps = list_modules(workflow_steps, module_type=inspect.isclass)
-        self.step = None
         for st in steps:
             if st[0].__name__ == step_name:
                 self.step = st[0]
@@ -33,12 +35,17 @@ class Step:
             raise ValueError(
                 rf'{step_name} is not a valid step! Valid steps are: {[st[0].__name__ for st in steps]}')
 
+        if method is not None:
+            self.add_method(method)
+
     def to_dict(self):
         step = dict()
         step['name'] = self.name
         step['method'] = self.method
         step['parameter_path'] = self.path
         step['number of parameter combinations'] = len(self.parameters)
+        step['number of inputs'] = self.n_inputs
+        step['number of outputs'] = self.n_outputs
         return step
 
     def __repr__(self):
