@@ -95,24 +95,22 @@ class TestStep(unittest.TestCase):
         self.assertTrue(os.path.exists(path))
         os.remove(path)
 
-    def test_export(self):
+    def test_export_import(self):
         s = Step('PSF', 'gaussian')
-        path = 'test.csv'
+        path_param1 = 'params1.csv'
         s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
-        s.save_parameters(path)
-        os.remove(path)
+        s.save_parameters(path_param1)
         w = Workflow()
         w.add_step(s)
-        w.add_step(Step('PSF', 'gaussian'))
+
         path = 'test.json'
         w.save(path)
 
         w2 = Workflow()
         w2.load(path)
-        print(w2.name)
-        print(w2.steps)
         self.assertTrue(os.path.exists(path))
         os.remove(path)
+        os.remove(path_param1)
 
 
 if __name__ == '__main__':
