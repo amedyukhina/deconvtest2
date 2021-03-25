@@ -20,6 +20,8 @@ class Module:
         self.arg_spec = None
         self.parameters = []
         self.result = None
+        self.n_inputs = None
+        self.n_outputs = None
 
         if method is not None:
             self.import_method(method)

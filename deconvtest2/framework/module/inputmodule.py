@@ -10,3 +10,5 @@ class InputModule(Module):
         super(InputModule, self).__init__(method=method,
                                           parameters=parameters,
                                           parent_name=parent_name)
+        self.n_inputs = 0
+        self.n_outputs = 1

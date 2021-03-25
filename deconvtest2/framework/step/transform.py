@@ -11,3 +11,5 @@ class Transform(Module):
         super(Transform, self).__init__(method=method,
                                         parameters=parameters,
                                         parent_name=parent_name)
+        self.n_inputs = 1
+        self.n_outputs = 1
