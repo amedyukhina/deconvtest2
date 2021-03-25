@@ -92,22 +92,34 @@ class Step:
         param_values_single = dict()
         for param in module.parameters:
             if param.name not in parameters.keys():
-                if param.optional is False:
-                    raise ValueError(rf'Parameter {param.name} is mandatory!')
-                else:
+                if param.optional:
                     param_values_single[param.name] = param.default_value
+                else:
+                    raise ValueError(rf'Parameter {param.name} is mandatory! '
+                                     '\nIf the parameter is an input image that will be '
+                                     'generated in another step of the pipeline, specify "pipeline"')
             else:
                 if type(parameters[param.name]) in [list, np.ndarray]:
                     is_list = True
                     for param_value in parameters[param.name]:
                         if not is_valid_type(param_value, param.type):
                             raise ValueError(rf'{type(param_value)} is not a valid type for {param.name}; '
-                                             f'valid types are: {param.type}')
+                                             f'valid types are: {param.type}.'
+                                             '\nIf the parameter is an input image that will be '
+                                             'generated in another step of the pipeline, specify "pipeline"'
+                                             )
                 else:
                     is_list = False
                     if not is_valid_type(parameters[param.name], param.type):
-                        raise ValueError(rf'{type(parameters[param.name])} is not a valid type for {param.name}; '
-                                         f'valid types are: {param.type}')
+                        if is_valid_type(np.ones([2, 2, 2]), param.type) and type(parameters[param.name]) is str and \
+                                parameters[param.name] == 'pipeline':
+                            pass
+                        else:
+                            raise ValueError(rf'{type(parameters[param.name])} is not a valid type for {param.name}; '
+                                             f'valid types are: {param.type}.'
+                                             '\nIf the parameter is an input image that will be '
+                                             'generated in another step of the pipeline, specify "pipeline"'
+                                             )
                     parameters[param.name] = [parameters[param.name]]
 
                 if is_valid_type([], param.type) and len(parameters[param.name]) <= 3:

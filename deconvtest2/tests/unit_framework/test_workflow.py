@@ -123,6 +123,20 @@ class TestStep(unittest.TestCase):
         s.save_parameters(path_gt)
         w.add_step(s)
 
+        s = Step('PSF', 'gaussian')
+        path_psf = 'params_psf.csv'
+        s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
+        s.save_parameters(path_psf)
+        w.add_step(s)
+
+        s = Step('Convolution', 'convolve')
+        s.specify_parameters(img='pipeline', psf='pipeline')
+        w.add_step(s)
+
+        print(w.steps)
+
+        print(s.list_parameters())
+
 
 if __name__ == '__main__':
     unittest.main()
