@@ -25,6 +25,7 @@ class Step:
         self.n_outputs = None
         self.method = None
         self.step = None
+        self.input_step = None
 
         steps = list_modules(workflow_steps, module_type=inspect.isclass)
         for st in steps:
@@ -46,6 +47,7 @@ class Step:
         step['number of parameter combinations'] = len(self.parameters)
         step['number of inputs'] = self.n_inputs
         step['number of outputs'] = self.n_outputs
+        step['input step'] = self.input_step
         return step
 
     def __repr__(self):

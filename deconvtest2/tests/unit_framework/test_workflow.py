@@ -113,6 +113,38 @@ class TestStep(unittest.TestCase):
         os.remove(path)
         os.remove(path_param1)
 
+    def test_missing_method(self):
+        w = Workflow()
+        s = Step('Convolution')
+        self.assertRaises(ValueError, w.add_step, s)
+
+    def test_wrong_step_order(self):
+        w = Workflow()
+        s = Step('Convolution', 'convolve')
+        self.assertRaises(IndexError, w.add_step, s)
+
+    def test_wrong_step_number(self):
+        w = Workflow(name='test workflow')
+        s = Step('GroundTruth', 'ellipsoid')
+        w.add_step(s)
+
+        s = Step('PSF', 'gaussian')
+        w.add_step(s)
+
+        s = Step('Convolution', 'convolve')
+        self.assertRaises(ValueError, w.add_step, s, input_step=[1, 0, 0])
+
+    def test_wrong_step_values(self):
+        w = Workflow(name='test workflow')
+        s = Step('GroundTruth', 'ellipsoid')
+        w.add_step(s)
+
+        s = Step('PSF', 'gaussian')
+        w.add_step(s)
+
+        s = Step('Convolution', 'convolve')
+        self.assertRaises(IndexError, w.add_step, s, input_step=[1, 2])
+
     def test_workflow(self):
         w = Workflow(name='test workflow')
 
@@ -131,7 +163,7 @@ class TestStep(unittest.TestCase):
 
         s = Step('Convolution', 'convolve')
         s.specify_parameters(img='pipeline', psf='pipeline')
-        w.add_step(s)
+        w.add_step(s, input_step=[0, 1])
 
         print(w.steps)
 

@@ -1,6 +1,8 @@
 import inspect
 import json
 import os
+import numpy as np
+from typing import Union
 
 from .step import Step
 from ...core.utils.utils import list_modules
@@ -24,7 +26,28 @@ class Workflow:
         self.steps = []
         self.path = None
 
-    def add_step(self, step: Step):
+    def add_step(self, step: Step, input_step: Union[int, list] = None):
+        if step.method is None:
+            raise ValueError(rf"Step {step.name} does not have a method. "
+                             "First specify the method by `step.add_method(method)`")
+        if step.n_inputs > len(self.steps):
+            raise IndexError(rf"Not enough previous steps in the workflow for step {step.name}."
+                             rf"{len(self.steps)} were added; {step.n_inputs} are required.")
+
+        if input_step is None:
+            input_step = list(map(int, np.arange(len(self.steps)-step.n_inputs, len(self.steps))))
+        else:
+            if len(input_step) != step.n_inputs:
+                raise ValueError(rf"Number of input steps must be {step.n_inputs}, {len(input_step)} provided")
+            for st in input_step:
+                if st >= len(self.steps):
+                    raise IndexError(rf"{st} is invalid value for step index; must be < {len(self.steps)}")
+
+        step.input_step = input_step
+        # if step.n_inputs == 0:
+        #     input_step = None
+        # else:
+
         self.steps.append(step)
 
     def to_dict(self):
