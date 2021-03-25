@@ -58,6 +58,9 @@ class Step:
     def add_method(self, method: str):
         if method in self.list_available_methods():
             self.method = method
+            module = self.step(self.method)
+            self.n_inputs = module.n_inputs
+            self.n_outputs = module.n_outputs
         else:
             raise ValueError(rf'{method} is not a valid method! Valid methods are: {self.list_available_methods()}')
 
