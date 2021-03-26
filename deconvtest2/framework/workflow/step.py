@@ -239,6 +239,6 @@ class Step:
                 os.makedirs(os.path.dirname(path))
             self.parameters.to_csv(path, index=False)
 
-    def load_parameters(self, path:str):
+    def load_parameters(self, path: str):
         self.parameters = pd.read_csv(path)
         return self.parameters
