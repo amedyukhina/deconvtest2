@@ -1,15 +1,15 @@
+import copy
 import inspect
+import itertools
 import json
 import os
-import numpy as np
 from typing import Union
-import itertools
-import copy
+
+import numpy as np
 
 from .step import Step
 from ...core.utils.utils import list_modules
 from ...framework import step as workflow_steps
-from ...core.utils.conversion import keys_to_list
 
 
 def list_available_steps():
@@ -39,7 +39,7 @@ class Workflow:
                              rf"{len(self.steps)} were added; {step.n_inputs} are required.")
 
         if input_step is None:
-            input_step = list(map(int, np.arange(len(self.steps)-step.n_inputs, len(self.steps))))
+            input_step = list(map(int, np.arange(len(self.steps) - step.n_inputs, len(self.steps))))
         else:
             if len(input_step) != step.n_inputs:
                 raise ValueError(rf"Number of input steps must be {step.n_inputs}, {len(input_step)} provided")
@@ -152,4 +152,3 @@ class Workflow:
             workflow = self.get_workflow_graph()
             with open(path, 'w') as f:
                 json.dump(workflow, f)
-
