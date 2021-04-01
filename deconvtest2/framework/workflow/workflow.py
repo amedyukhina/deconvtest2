@@ -48,10 +48,6 @@ class Workflow:
                     raise IndexError(rf"{st} is invalid value for step index; must be < {len(self.steps)}")
 
         step.input_step = input_step
-        # if step.n_inputs == 0:
-        #     input_step = None
-        # else:
-
         self.steps.append(step)
 
     def to_dict(self):
