@@ -138,7 +138,7 @@ class Step:
                 if is_valid_type([], param.type) and len(parameters[param.name]) <= 3:
                     warnings.warn(rf'Since list is a valid type for parameter {param.name} and '
                                   rf'the number of provided values is <= 3, '
-                                  rf'values {parameters[param.name]} will be assumed as'
+                                  rf'values {parameters[param.name]} will be assumed as '
                                   rf'{len(parameters[param.name])} different values.'
                                   rf'To specify one value for different dimensions, wrap them up in another list, e.g:'
                                   rf'[[value_dim1, value_dim2, value_dim2]]')
