@@ -124,6 +124,8 @@ class Step:
                                              '\nIf the parameter is an input image that will be '
                                              'generated in another step of the pipeline, specify "pipeline"'
                                              )
+                    if len(parameters[param.name]) == 1:
+                        is_list = False
                 else:
                     is_list = False
                     if is_valid_type(parameters[param.name], param.type):

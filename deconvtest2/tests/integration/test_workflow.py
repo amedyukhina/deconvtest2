@@ -15,7 +15,7 @@ class TestWorkflow(unittest.TestCase):
 
         s = Step('GroundTruth', 'ellipsoid')
         path_gt = 'params_ellipsoid.csv'
-        s.specify_parameters(size=[10], voxel_size=0.5,
+        s.specify_parameters(size=[10], voxel_size=[[0.5, 0.2, 0.2]],
                              theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='permute', base_name='GT')
         s.save_parameters(path_gt)
         w.add_step(s)

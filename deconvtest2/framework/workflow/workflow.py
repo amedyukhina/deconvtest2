@@ -8,6 +8,7 @@ from typing import Union
 import numpy as np
 
 from .step import Step
+from ...core.utils.conversion import keys_to_list
 from ...core.utils.utils import list_modules
 from ...framework import step as workflow_steps
 
@@ -94,6 +95,7 @@ class Workflow:
                     item['steps'] = []
                     step = dict(name=master_step.name, method=master_step.method)
                     params = dict(master_step.parameters.iloc[i])
+                    params = keys_to_list(params)
                     for key in params.keys():
                         try:
                             step[key] = params[key].item()
