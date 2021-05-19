@@ -15,7 +15,8 @@ from ...framework import step as workflow_steps
 
 def list_available_steps():
     steps = list_modules(workflow_steps, module_type=inspect.isclass)
-    steps = [Step(st[0].__name__) for st in steps]
+    steps = np.unique([st[0].__name__ for st in steps])
+    steps = [Step(st) for st in steps]
     return steps
 
 
@@ -135,6 +136,7 @@ class Workflow:
                 else:
                     blocks.append(block)
         self.workflow = blocks[-1]
+        self.workflow['name'] = 'workflow_graph'
         if to_json:
             return json.dumps(self.workflow, indent=4)
         else:
