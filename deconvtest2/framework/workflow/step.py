@@ -26,28 +26,37 @@ class Step:
         self.method = None
         self.step = None
         self.input_step = None
+        self.valid_parameters = None
 
         steps = list_modules(workflow_steps, module_type=inspect.isclass)
         for st in steps:
             if st[0].__name__ == step_name:
                 self.step = st[0]
+                self.n_inputs = st[0]().n_inputs
+                self.n_outputs = st[0]().n_outputs
 
         if self.step is None:
             raise ValueError(
                 rf'{step_name} is not a valid step! Valid steps are: {[st[0].__name__ for st in steps]}')
 
+        self.available_methods = self.list_available_methods()
         if method is not None:
             self.add_method(method)
 
     def to_dict(self):
         step = dict()
         step['name'] = self.name
-        step['method'] = self.method
-        step['parameter_path'] = self.path
-        step['number of parameter combinations'] = len(self.parameters)
         step['number of inputs'] = self.n_inputs
         step['number of outputs'] = self.n_outputs
-        step['input step'] = self.input_step
+        if self.method is not None:
+            step['method'] = self.method
+            step['parameter_path'] = self.path
+            step['number of parameter combinations'] = len(self.parameters)
+            step['input step'] = self.input_step
+            if len(self.parameters) == 0 and self.valid_parameters is not None:
+                step['valid parameters'] = [str(p) for p in self.valid_parameters]
+        else:
+            step['available methods'] = self.available_methods
         return step
 
     def from_dict(self, step_dict):
@@ -68,11 +77,12 @@ class Step:
         return module.list_available_modules_names()
 
     def add_method(self, method: str):
-        if method in self.list_available_methods():
+        if method in self.available_methods:
             self.method = method
             module = self.step(self.method)
             self.n_inputs = module.n_inputs
             self.n_outputs = module.n_outputs
+            self.valid_parameters = self.list_parameters()
         else:
             raise ValueError(rf'{method} is not a valid method! Valid methods are: {self.list_available_methods()}')
 
