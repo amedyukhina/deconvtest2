@@ -10,6 +10,7 @@ from ...framework.step.evaluation import Evaluation
 from ...framework.step.ground_truth import GroundTruth
 from ...framework.step.psf import PSF
 from ...framework.step.transform import Transform
+from ...framework.step.convolution import Convolution
 
 
 @ddt
@@ -56,7 +57,7 @@ class TestModuleImport(unittest.TestCase):
         'convolve',
     )
     def test_transform_method(self, method):
-        module = Transform(method)
+        module = Convolution(method)
         self.assertIsNotNone(module.method)
 
     @data(
