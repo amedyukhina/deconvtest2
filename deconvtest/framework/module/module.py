@@ -9,7 +9,7 @@ class Module:
     Abstract module class
     """
 
-    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest2.modules'):
+    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest.modules'):
         if parameters is None:
             self.parameter_values = dict()
         else:

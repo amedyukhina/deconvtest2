@@ -7,7 +7,7 @@ class Convolution(Module):
     """
 
     def __init__(self, parameters: dict = None,
-                 parent_name: str = 'deconvtest2.modules.convolution'):
+                 parent_name: str = 'deconvtest.modules.convolution'):
         super(Convolution, self).__init__(method='convolve',
                                           parameters=parameters,
                                           parent_name=parent_name)

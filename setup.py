@@ -1,29 +1,29 @@
 from setuptools import setup
 
 setup(
-    name='deconvtest2',
+    name='deconvtest',
     version='0.0',
     author="Anna Medyukhina",
     author_email='anna.medyukhina@gmail.com',
-    packages=['deconvtest2',
-              'deconvtest2.modules',
-              'deconvtest2.modules.ground_truth',
-              'deconvtest2.modules.psf',
-              'deconvtest2.modules.transforms',
-              'deconvtest2.modules.deconvolution',
-              'deconvtest2.modules.evaluation',
-              'deconvtest2.core',
-              'deconvtest2.core.shapes',
-              'deconvtest2.core.utils',
-              'deconvtest2.framework',
-              'deconvtest2.framework.module',
-              'deconvtest2.framework.step',
-              'deconvtest2.framework.workflow'
+    packages=['deconvtest',
+              'deconvtest.modules',
+              'deconvtest.modules.ground_truth',
+              'deconvtest.modules.psf',
+              'deconvtest.modules.transforms',
+              'deconvtest.modules.deconvolution',
+              'deconvtest.modules.evaluation',
+              'deconvtest.core',
+              'deconvtest.core.shapes',
+              'deconvtest.core.utils',
+              'deconvtest.framework',
+              'deconvtest.framework.module',
+              'deconvtest.framework.step',
+              'deconvtest.framework.workflow'
               ],
     license='BSD-3-Clause',
     include_package_data=True,
 
-    test_suite='deconvtest2.tests',
+    test_suite='deconvtest.tests',
 
     install_requires=[
         'numpy',
