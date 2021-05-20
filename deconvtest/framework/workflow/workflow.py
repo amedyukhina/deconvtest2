@@ -6,6 +6,7 @@ import os
 from typing import Union
 
 import numpy as np
+from tqdm import tqdm
 
 from .step import Step
 from ...core.utils.conversion import keys_to_list
@@ -138,8 +139,7 @@ class Workflow:
                             outputID = outputID + iter_item['steps'][-1]['outputID'] + '_'
                             inputIDs.append(iter_item['steps'][-1]['outputID'])
                         nblock['items'].append(item)
-                        nblock['items'][i]['steps'][-1]['inputIDs'] = [inputID for inputID in inputIDs
-                                                                       if inputID != ""]
+                        nblock['items'][i]['steps'][-1]['inputIDs'] = inputIDs[:len(master_step.input_step)]
                         nblock['items'][i]['steps'][-1]['outputID'] = outputID.rstrip('_')
                     blocks.append(nblock)
                 else:
@@ -166,18 +166,24 @@ class Workflow:
         if self.workflow is None:
             self.get_workflow_graph()
         os.makedirs(self.output_path, exist_ok=True)
-        for item in self.workflow['items'][:2]:
-            print(item['name'])
+        for item in tqdm(self.workflow['items']):
             steps = item['steps']
+            outputs = dict()
             for step_kwargs in steps:
                 name = step_kwargs.pop('name')
                 method = step_kwargs.pop('method')
                 outputID = step_kwargs.pop('outputID')
-                print(name, method, outputID)
-                print(step_kwargs)
+
+                if "inputIDs" in step_kwargs:
+                    inputIDs = step_kwargs.pop('inputIDs')
+                    inputs = [outputs[inputID] for inputID in inputIDs]
+                else:
+                    inputs = []
+
                 module = Step(name, method).step(method=method)
-                print(module)
-                output = module.run(**step_kwargs)
-                print(output.shape)
+                output = module.run(*inputs, **step_kwargs)
+                np.save(os.path.join(self.output_path, outputID + '.npy'), output)
+                outputs[outputID] = output
+
 
 
