@@ -32,7 +32,8 @@ class TestConversion(unittest.TestCase):
 
     def test_dict_conversion(self):
         params = dict({'x': 3,
-                       'size': [2, 3, 5]})
+                       'size': [2, 3, 5],
+                       'length': [5, 10, 3]})
         params_converted = keys_to_list(list_to_keys(params))
         for key in params.keys():
             if type(params[key]) is list:
