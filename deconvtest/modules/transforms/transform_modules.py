@@ -28,6 +28,7 @@ def poisson_noise(img: np.ndarray, snr: Union[int, float]):
         warnings.warn("SNR is None, returning the input image")
         return img
     else:
+        img[np.where(img < 0)] = 0
         img = img.astype(np.float32)
         imgmax = snr ** 2  # new image maximum to generate the right level of Poisson noise
         ratio = imgmax / img.max()  # keep the ratio of the new and old maximum to recover the old dynamic range
