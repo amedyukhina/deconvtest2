@@ -94,56 +94,57 @@ class Workflow:
     def get_workflow_graph(self, to_json=False):
         blocks = []
         for master_step in self.steps:
-            if master_step.name != 'Evaluation':
-                block = dict(name=rf'block{len(blocks):02d}')
-                block['items'] = []
-                for i in range(len(master_step.parameters)):
-                    item = dict(name=rf'item{i:02d}')
-                    item['steps'] = []
-                    step = dict(name=master_step.name, method=master_step.method)
-                    params = dict(master_step.parameters.iloc[i])
-                    params = keys_to_list(params)
-                    for key in params.keys():
-                        try:
-                            step[key] = params[key].item()
-                        except AttributeError:
-                            step[key] = params[key]
-                    step['outputID'] = step.pop('ID')
-                    item['steps'].append(step)
-                    block['items'].append(item)
-                if len(master_step.parameters) == 0:
-                    item = dict(name=rf'item00')
-                    item['steps'] = []
-                    step = dict(name=master_step.name, method=master_step.method)
-                    step['outputID'] = ''
-                    item['steps'].append(step)
-                    block['items'].append(item)
+            block = dict(name=rf'block{len(blocks):02d}')
+            block['items'] = []
+            for i in range(len(master_step.parameters)):
+                item = dict(name=rf'item{i:02d}')
+                item['steps'] = []
+                step = dict(name=master_step.name, method=master_step.method)
+                params = dict(master_step.parameters.iloc[i])
+                params = keys_to_list(params)
+                for key in params.keys():
+                    try:
+                        step[key] = params[key].item()
+                    except AttributeError:
+                        step[key] = params[key]
+                step['outputID'] = step.pop('ID')
+                item['steps'].append(step)
+                block['items'].append(item)
+            if len(master_step.parameters) == 0:
+                item = dict(name=rf'item00')
+                item['steps'] = []
+                step = dict(name=master_step.name, method=master_step.method)
+                step['outputID'] = ''
+                item['steps'].append(step)
+                block['items'].append(item)
 
-                if master_step.n_inputs > 0:
-                    lists = []
-                    for input_step in master_step.input_step:
-                        lists.append(blocks[input_step]['items'])
-                    if len(block['items']) > 0:
-                        lists.append(block['items'])
+            if master_step.n_inputs > 0:
+                lists = []
+                for input_step in master_step.input_step:
+                    lists.append(blocks[input_step]['items'])
+                if len(block['items']) > 0:
+                    lists.append(block['items'])
 
-                    nblock = dict(name=rf'updated_block{len(blocks):02d}')
-                    nblock['items'] = []
-                    for i, items in enumerate(itertools.product(*lists)):
-                        item = dict(name=rf'item{i:03d}')
-                        item['steps'] = []
-                        outputID = ''
-                        inputIDs = []
-                        for iter_item in items:
-                            for st in iter_item['steps']:
-                                item['steps'].append(copy.deepcopy(st))
-                            outputID = outputID + iter_item['steps'][-1]['outputID'] + '_'
-                            inputIDs.append(iter_item['steps'][-1]['outputID'])
-                        nblock['items'].append(item)
-                        nblock['items'][i]['steps'][-1]['inputIDs'] = inputIDs[:len(master_step.input_step)]
-                        nblock['items'][i]['steps'][-1]['outputID'] = outputID.rstrip('_')
-                    blocks.append(nblock)
-                else:
-                    blocks.append(block)
+                nblock = dict(name=rf'updated_block{len(blocks):02d}')
+                nblock['items'] = []
+                for i, items in enumerate(itertools.product(*lists)):
+                    item = dict(name=rf'item{i:03d}')
+                    item['steps'] = []
+                    outputID = ''
+                    inputIDs = []
+                    for iter_item in items:
+                        for st in iter_item['steps']:
+                            item['steps'].append(copy.deepcopy(st))
+                        outputID = outputID + iter_item['steps'][-1]['outputID'] + '_'
+                        inputIDs.append(iter_item['steps'][-1]['outputID'])
+                    nblock['items'].append(item)
+                    nblock['items'][i]['steps'][-1]['inputIDs'] = inputIDs[:len(master_step.input_step)]
+                    nblock['items'][i]['steps'][-1]['outputID'] = outputID.rstrip('_')
+                    if master_step.name == 'Evaluation':
+                        nblock['items'][i]['steps'][-1]['outputID'] = inputIDs[0] + '_vs_' + inputIDs[1]
+                blocks.append(nblock)
+            else:
+                blocks.append(block)
         self.workflow = blocks[-1]
         self.workflow['name'] = 'workflow_graph'
         if to_json:
