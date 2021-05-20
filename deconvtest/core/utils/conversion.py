@@ -2,6 +2,7 @@ import re
 from typing import Union
 
 import numpy as np
+import pandas as pd
 
 from ..utils.utils import check_type
 
@@ -89,6 +90,53 @@ def list_to_keys(params: dict, sep: str = '_'):
     return params_converted
 
 
+def list_to_columns(params: pd.DataFrame, sep: str = '_'):
+    """
+    Convert list values in a table to individual column entries.
+
+    Parameters
+    ----------
+    params : dict
+        Table to convert
+    sep : str, optional
+        Separator to separate indices.
+        Default is '_'
+
+    Returns
+    -------
+    dict:
+        Converted table
+
+    """
+    list_length = dict()
+    for key in params.columns:
+        list_length[key] = 0
+        for ind in range(len(params)):
+            if type(params[key].iloc[ind]) in [list, np.array]:
+                list_length[key] = max(len(params[key].iloc[ind]), list_length[key])
+
+    params_converted = pd.DataFrame()
+    for key in params.columns:
+        if list_length[key] > 0:
+            df_tmp = pd.DataFrame()
+            for ind in range(len(params)):
+                df_tmp_row = pd.DataFrame()
+                if type(params[key].iloc[ind]) in [list, np.array]:
+                    for i, value in enumerate(params[key].iloc[ind]):
+                        df_tmp_row[key + sep + str(i)] = [value]
+                else:
+                    for i in range(list_length[key]):
+                        df_tmp_row[key + sep + str(i)] = [params[key].iloc[ind]]
+                df_tmp = pd.concat([df_tmp, df_tmp_row], ignore_index=True)
+            for col in df_tmp.columns:
+                params_converted[col] = df_tmp[col]
+
+        else:
+            params_converted[key] = params[key]
+
+    return params_converted
+
+
 def keys_to_list(params: dict, sep: str = '_'):
     """
     Convert key values in a dictionary that have a common stem to one key with a list value.
@@ -113,10 +161,14 @@ def keys_to_list(params: dict, sep: str = '_'):
     values = []
     for key in params.keys():
         if len(p.findall(key)) > 0:
-            keys.append(key)
+            keys.append(p.findall(key)[0])
             values.append(params[key])
         else:
             params_converted[key] = params[key]
     if len(keys) > 1:
-        params_converted[p.findall(keys[0])[0]] = values
+        keys = np.array(keys)
+        values = np.array(values)
+        unique_keys = np.unique(keys)
+        for unique_key in unique_keys:
+            params_converted[unique_key] = list(values[np.where(keys == unique_key)])
     return params_converted
