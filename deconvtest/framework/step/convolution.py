@@ -6,9 +6,10 @@ class Convolution(Module):
     Transform module
     """
 
-    def __init__(self, parameters: dict = None,
+    def __init__(self, method: str = 'convolve',
+                 parameters: dict = None,
                  parent_name: str = 'deconvtest.modules.convolution'):
-        super(Convolution, self).__init__(method='convolve',
+        super(Convolution, self).__init__(method=method,
                                           parameters=parameters,
                                           parent_name=parent_name)
         self.n_inputs = 2
