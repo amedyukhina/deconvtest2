@@ -47,6 +47,8 @@ class TestWorkflow(unittest.TestCase):
         path_graph = 'workflow_graph.json'
         w2.save_workflow_graph(path_graph)
 
+        # w2.run()
+
 
 if __name__ == '__main__':
     unittest.main()

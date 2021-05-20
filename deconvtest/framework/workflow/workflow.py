@@ -25,12 +25,15 @@ class Workflow:
     Workflow class
     """
 
-    def __init__(self, name: str = 'New Workflow'):
+    def __init__(self, name: str = 'New Workflow', output_path: str = None):
         self.name = name
         self.available_steps = list_available_steps()
         self.steps = []
         self.path = None
         self.workflow = None
+        self.output_path = name.replace(' ', '_')
+        if output_path is not None:
+            self.output_path = output_path
 
     def add_step(self, step: Step, input_step: Union[int, list] = None):
         if step.method is None:
@@ -56,6 +59,7 @@ class Workflow:
         workflow = dict()
         workflow['name'] = self.name
         workflow['path'] = self.path
+        workflow['output path'] = self.output_path
         workflow['steps'] = [step.to_dict() for step in self.steps]
         return workflow
 
@@ -79,6 +83,7 @@ class Workflow:
             workflow = json.load(f)
         self.name = workflow['name']
         self.path = path
+        self.output_path = workflow['output path']
         self.steps = []
         for step in workflow['steps']:
             s = Step(step['name'])
@@ -152,3 +157,23 @@ class Workflow:
             workflow = self.get_workflow_graph()
             with open(path, 'w') as f:
                 json.dump(workflow, f)
+
+    def run(self):
+        if self.workflow is None:
+            self.get_workflow_graph()
+        os.makedirs(self.output_path, exist_ok=True)
+        for item in self.workflow['items'][:2]:
+            print(item['name'])
+            steps = item['steps']
+            for step_kwargs in steps:
+                name = step_kwargs.pop('name')
+                method = step_kwargs.pop('method')
+                outputID = step_kwargs.pop('outputID')
+                print(name, method, outputID)
+                print(step_kwargs)
+                module = Step(name, method).step(method=method)
+                print(module)
+                output = module.run(**step_kwargs)
+                print(output.shape)
+
+
