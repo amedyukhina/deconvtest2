@@ -22,6 +22,7 @@ class Module:
         self.result = None
         self.n_inputs = None
         self.n_outputs = None
+        self.inputs = None
 
         if method is not None:
             self.import_method(method)
@@ -72,6 +73,7 @@ class Module:
                                              parameter_type=parameter_type))
 
     def verify_parameters(self):
+        missing_param = 0
         for parameter in self.parameters:
             if parameter.name in self.parameter_values.keys():
                 if not is_valid_type(self.parameter_values[parameter.name], parameter.type):
@@ -83,11 +85,17 @@ class Module:
                 # add default value if available, otherwise raise error
                 if parameter.optional is True:
                     self.parameter_values[parameter.name] = parameter.default_value
+                elif self.inputs is not None and len(self.inputs) > 0:
+                    missing_param += 1
                 else:
                     raise ValueError(rf'Parameter `{parameter.name}` is mandatory, please provide a value!')
+        if missing_param > 0 and missing_param != len(self.inputs):
+            raise ValueError(rf'Number of inputs to {self.method} must be {missing_param}, '
+                             rf'{len(self.inputs)} provided.')
 
-    def run(self, **parameters):
+    def run(self, *inputs, **parameters):
         self.parameter_values = parameters
+        self.inputs = inputs
         self.verify_parameters()
-        self.result = self.method(**self.parameter_values)
+        self.result = self.method(*self.inputs, **self.parameter_values)
         return self.result
