@@ -131,11 +131,15 @@ class Workflow:
                         item = dict(name=rf'item{i:03d}')
                         item['steps'] = []
                         outputID = ''
+                        inputIDs = []
                         for iter_item in items:
                             for st in iter_item['steps']:
                                 item['steps'].append(copy.deepcopy(st))
                             outputID = outputID + iter_item['steps'][-1]['outputID'] + '_'
+                            inputIDs.append(iter_item['steps'][-1]['outputID'])
                         nblock['items'].append(item)
+                        nblock['items'][i]['steps'][-1]['inputIDs'] = [inputID for inputID in inputIDs
+                                                                       if inputID != ""]
                         nblock['items'][i]['steps'][-1]['outputID'] = outputID.rstrip('_')
                     blocks.append(nblock)
                 else:
