@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from ...core.utils.conversion import list_to_keys
+from ...core.utils.conversion import list_to_keys, list_to_columns
 from ...core.utils.utils import list_modules, is_valid_type
 from ...framework import step as workflow_steps
 
@@ -170,8 +170,12 @@ class Step:
             df_parameters = pd.DataFrame(values, columns=param_values_list.keys())
 
         param_values_single = list_to_keys(param_values_single)
+        df_parameters = list_to_columns(df_parameters)
         for key in param_values_single.keys():
-            df_parameters[key] = param_values_single[key]
+            if len(df_parameters) > 0:
+                df_parameters[key] = param_values_single[key]
+            else:
+                df_parameters[key] = [param_values_single[key]]
 
         return df_parameters
 
