@@ -1,4 +1,5 @@
 import numpy as np
+from skimage.metrics import structural_similarity
 
 from ...core.utils.conversion import unify_shape
 from ...core.utils.utils import check_type
@@ -48,4 +49,21 @@ def nrmse(img1: np.ndarray, img2: np.ndarray) -> float:
     """
     err = rmse(img1, img2)
     return err / (np.max(img1) - np.min(img1))
+
+
+def ssim(img1: np.ndarray, img2: np.ndarray) -> float:
+    """
+    Compute Structural Similarity Index (SSIM) between two input images.
+
+    Parameters
+    ----------
+    img1, img2 : ndarray
+        Input images of the same shape
+
+    Returns
+    -------
+    float:
+        SSIM between the two input images
+    """
+    return structural_similarity(img1*1., img2*1., full=False)
 
