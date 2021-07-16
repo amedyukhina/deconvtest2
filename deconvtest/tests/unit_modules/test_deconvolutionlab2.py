@@ -6,10 +6,10 @@ import numpy as np
 from ddt import ddt
 from skimage import io
 
+from ...modules.convolution.convolution_modules import convolve
 from ...modules.deconvolution.deconvolutionlab2 import regularized_inverse_filter
 from ...modules.ground_truth.ground_truth_modules import ellipsoid
 from ...modules.psf.psf_modules import gaussian
-from ...modules.convolution.convolution_modules import convolve
 
 
 @ddt

@@ -22,8 +22,8 @@ class TestRMSE(unittest.TestCase):
         self.assertEqual(err, target_err)
 
     def test_against_skimage(self):
-        img1 = np.random.randint(0, 100, [100, 100])*1.
-        img2 = np.random.randint(0, 100, [100, 100])*1.
+        img1 = np.random.randint(0, 100, [100, 100]) * 1.
+        img2 = np.random.randint(0, 100, [100, 100]) * 1.
         self.assertEqual(normalized_root_mse(img1, img2, normalization='min-max'), nrmse(img1, img2))
 
 

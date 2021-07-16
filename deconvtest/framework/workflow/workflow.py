@@ -185,6 +185,3 @@ class Workflow:
                 output = module.run(*inputs, **step_kwargs)
                 np.save(os.path.join(self.output_path, outputID + '.npy'), output)
                 outputs[outputID] = output
-
-
-

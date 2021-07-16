@@ -1,6 +1,6 @@
 import numpy as np
-from skimage.metrics import structural_similarity
 from skimage.metrics import peak_signal_noise_ratio
+from skimage.metrics import structural_similarity
 
 from ...core.utils.conversion import unify_shape
 from ...core.utils.utils import check_type
@@ -66,7 +66,7 @@ def ssim(img1: np.ndarray, img2: np.ndarray) -> float:
     float:
         SSIM between the two input images
     """
-    return structural_similarity(img1*1., img2*1., full=False)
+    return structural_similarity(img1 * 1., img2 * 1., full=False)
 
 
 def psnr(img1: np.ndarray, img2: np.ndarray) -> float:
@@ -85,4 +85,4 @@ def psnr(img1: np.ndarray, img2: np.ndarray) -> float:
     float:
         PSNR for the test image
     """
-    return peak_signal_noise_ratio(img1*1., img2*1., data_range=np.max(img1)-np.min(img1))
+    return peak_signal_noise_ratio(img1 * 1., img2 * 1., data_range=np.max(img1) - np.min(img1))

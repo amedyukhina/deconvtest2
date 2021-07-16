@@ -15,14 +15,14 @@ class TestWorkflow(unittest.TestCase):
 
         s = Step('GroundTruth', 'ellipsoid')
         path_gt = 'params_ellipsoid.csv'
-        s.specify_parameters(size=[[10,6,6], 10], voxel_size=[[0.5, 0.2, 0.2]],
+        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
                              theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='align', base_name='GT')
         s.save_parameters(path_gt)
         w.add_step(s)
 
         s = Step('PSF', 'gaussian')
         path_psf = 'params_psf.csv'
-        s.specify_parameters(sigma=[1,2], aspect=[2, 4], mode='align')
+        s.specify_parameters(sigma=[1, 2], aspect=[2, 4], mode='align')
         s.save_parameters(path_psf)
         w.add_step(s)
 

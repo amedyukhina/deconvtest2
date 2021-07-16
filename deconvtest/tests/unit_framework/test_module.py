@@ -5,12 +5,11 @@ import numpy as np
 from ddt import ddt, data
 
 from ...framework.module.module import Module
+from ...framework.step.convolution import Convolution
 from ...framework.step.deconvolution import Deconvolution
 from ...framework.step.evaluation import Evaluation
 from ...framework.step.ground_truth import GroundTruth
 from ...framework.step.psf import PSF
-from ...framework.step.transform import Transform
-from ...framework.step.convolution import Convolution
 
 
 @ddt
