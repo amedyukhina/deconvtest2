@@ -4,6 +4,8 @@ import itertools
 import json
 import os
 from typing import Union
+from skimage import io
+import warnings
 
 import numpy as np
 from tqdm import tqdm
@@ -183,5 +185,10 @@ class Workflow:
 
                 module = Step(name, method).step(method=method)
                 output = module.run(*inputs, **step_kwargs)
-                np.save(os.path.join(self.output_path, outputID + '.npy'), output)
+                if name == 'Evaluation':
+                    np.save(os.path.join(self.output_path, outputID + '.npy'), output)
+                else:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        io.imsave(os.path.join(self.output_path, outputID + '.tif'), output)
                 outputs[outputID] = output
