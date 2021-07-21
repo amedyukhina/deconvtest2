@@ -3,12 +3,12 @@ import inspect
 import itertools
 import json
 import os
-import warnings
 from typing import Union
+from skimage import io
+import warnings
+import pandas as pd
 
 import numpy as np
-import pandas as pd
-from skimage import io
 from tqdm import tqdm
 
 from .step import Step
