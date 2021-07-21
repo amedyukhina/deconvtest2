@@ -50,8 +50,10 @@ class TestWorkflow(unittest.TestCase):
         path_graph = 'workflow_graph.json'
         w2.save_workflow_graph(os.path.join(path, path_graph))
 
-        w2.run()
+        w2.run(verbose=False)
+        files = os.listdir(os.path.join(path, 'data'))
         shutil.rmtree(path)
+        self.assertEqual(len(files), 32)
 
 
 if __name__ == '__main__':
