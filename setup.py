@@ -29,5 +29,6 @@ setup(
         'numpy',
         'scipy',
         'ddt',
+        'pytest'
     ],
 )
