@@ -170,28 +170,30 @@ class Workflow:
         if self.workflow is None:
             self.get_workflow_graph()
         os.makedirs(self.output_path, exist_ok=True)
+        outputs = dict()
         for item in tqdm(self.workflow['items']):
             steps = item['steps']
-            outputs = dict()
             for step_kwargs in steps:
                 name = step_kwargs.pop('name')
                 method = step_kwargs.pop('method')
                 outputID = step_kwargs.pop('outputID')
+                output_name = os.path.join(self.output_path, outputID + '.tif')
+                outputs[outputID] = output_name
+                if not os.path.exists(output_name):
+                    if "inputIDs" in step_kwargs:
+                        inputIDs = step_kwargs.pop('inputIDs')
+                        inputs = [outputs[inputID] for inputID in inputIDs]
+                        inputs = [io.imread(fn) for fn in inputs]
+                    else:
+                        inputs = []
 
-                if "inputIDs" in step_kwargs:
-                    inputIDs = step_kwargs.pop('inputIDs')
-                    inputs = [outputs[inputID] for inputID in inputIDs]
-                else:
-                    inputs = []
-
-                module = Step(name, method).step(method=method)
-                output = module.run(*inputs, **step_kwargs)
-                if name == 'Evaluation':
-                    stat = pd.DataFrame({'OutputID': [outputID],
-                                         method: [output]})
-                    stat.to_csv(os.path.join(self.output_path, rf'{outputID}_{method}.csv'), index=False)
-                else:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore")
-                        io.imsave(os.path.join(self.output_path, outputID + '.tif'), output)
-                outputs[outputID] = output
+                    module = Step(name, method).step(method=method)
+                    output = module.run(*inputs, **step_kwargs)
+                    if name == 'Evaluation':
+                        stat = pd.DataFrame({'OutputID': [outputID],
+                                             method: [output]})
+                        stat.to_csv(os.path.join(self.output_path, rf'{outputID}_{method}.csv'), index=False)
+                    else:
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            io.imsave(output_name, output)
