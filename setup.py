@@ -31,6 +31,7 @@ setup(
         'ddt',
         'pytest',
         'tqdm',
-        'scikit-image'
+        'scikit-image',
+        'pandas'
     ],
 )
