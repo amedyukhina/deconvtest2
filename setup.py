@@ -32,6 +32,10 @@ setup(
         'pytest',
         'tqdm',
         'scikit-image',
-        'pandas'
+        'pandas',
+        'am_utils'
+    ],
+    dependency_links=[
+        "https://github.com/amedyukhina/am_utils/releases/",
     ],
 )
