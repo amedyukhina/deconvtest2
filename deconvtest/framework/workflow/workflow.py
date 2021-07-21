@@ -3,13 +3,14 @@ import inspect
 import itertools
 import json
 import os
-from typing import Union
-from skimage import io
 import warnings
-import pandas as pd
+from time import sleep
+from typing import Union
 
 import numpy as np
-from tqdm import tqdm
+import pandas as pd
+from am_utils.parallel import run_parallel
+from skimage import io
 
 from .step import Step
 from ...core.utils.conversion import keys_to_list
@@ -166,34 +167,64 @@ class Workflow:
             with open(path, 'w') as f:
                 json.dump(workflow, f)
 
-    def run(self):
+    def run(self, njobs=8, verbose=True):
         if self.workflow is None:
             self.get_workflow_graph()
         os.makedirs(self.output_path, exist_ok=True)
+        img_filename_pattern = os.path.join(self.output_path, '%s.tif')
+        stat_filename_pattern = os.path.join(self.output_path, '%s.csv')
+
+        # store filenames for the outputs
         outputs = dict()
-        for item in tqdm(self.workflow['items']):
+        for item in self.workflow['items']:
             steps = item['steps']
             for step_kwargs in steps:
-                name = step_kwargs.pop('name')
-                method = step_kwargs.pop('method')
-                outputID = step_kwargs.pop('outputID')
-                output_name = os.path.join(self.output_path, outputID + '.tif')
-                outputs[outputID] = output_name
-                if not os.path.exists(output_name):
-                    if "inputIDs" in step_kwargs:
-                        inputIDs = step_kwargs.pop('inputIDs')
-                        inputs = [outputs[inputID] for inputID in inputIDs]
-                        inputs = [io.imread(fn) for fn in inputs]
-                    else:
-                        inputs = []
+                outputs[step_kwargs['outputID']] = img_filename_pattern % step_kwargs['outputID']
 
-                    module = Step(name, method).step(method=method)
-                    output = module.run(*inputs, **step_kwargs)
-                    if name == 'Evaluation':
-                        stat = pd.DataFrame({'OutputID': [outputID],
-                                             method: [output]})
-                        stat.to_csv(os.path.join(self.output_path, rf'{outputID}_{method}.csv'), index=False)
-                    else:
-                        with warnings.catch_warnings():
-                            warnings.simplefilter("ignore")
-                            io.imsave(output_name, output)
+        # run the workflow in parallel
+        run_parallel(
+            process=run_item,
+            print_progress=verbose,
+            items=self.workflow['items'],
+            max_threads=njobs,
+            img_filename_pattern=img_filename_pattern,
+            stat_filename_pattern=stat_filename_pattern,
+            outputs=outputs
+        )
+
+
+def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
+    steps = item['steps']
+    for step_kwargs in steps:
+        name = step_kwargs.pop('name')
+        method = step_kwargs.pop('method')
+        outputID = step_kwargs.pop('outputID')
+        output_name = img_filename_pattern % outputID
+
+        # if output exists, wait until file size stops increasing
+        if os.path.exists(output_name):
+            size1 = os.path.getsize(output_name)
+            sleep(0.1)
+            size2 = os.path.getsize(output_name)
+            while size2 > size1:
+                size1 = size2
+                sleep(0.1)
+                size2 = os.path.getsize(output_name)
+        else:
+            if "inputIDs" in step_kwargs:
+                inputIDs = step_kwargs.pop('inputIDs')
+                inputs = [outputs[inputID] for inputID in inputIDs]
+                inputs = [io.imread(fn) for fn in inputs]
+            else:
+                inputs = []
+
+            module = Step(name, method).step(method=method)
+            output = module.run(*inputs, **step_kwargs)
+            if name == 'Evaluation':
+                stat = pd.DataFrame({'OutputID': [outputID],
+                                     method: [output]})
+                stat.to_csv(stat_filename_pattern % outputID, index=False)
+            else:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    io.imsave(output_name, output)
