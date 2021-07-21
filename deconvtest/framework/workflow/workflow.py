@@ -3,11 +3,12 @@ import inspect
 import itertools
 import json
 import os
-from typing import Union
-from skimage import io
 import warnings
+from typing import Union
 
 import numpy as np
+import pandas as pd
+from skimage import io
 from tqdm import tqdm
 
 from .step import Step
@@ -186,7 +187,9 @@ class Workflow:
                 module = Step(name, method).step(method=method)
                 output = module.run(*inputs, **step_kwargs)
                 if name == 'Evaluation':
-                    np.save(os.path.join(self.output_path, outputID + '.npy'), output)
+                    stat = pd.DataFrame({'OutputID': [outputID],
+                                         method: [output]})
+                    stat.to_csv(os.path.join(self.output_path, rf'{outputID}_{method}.csv'), index=False)
                 else:
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore")
