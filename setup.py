@@ -29,6 +29,8 @@ setup(
         'numpy',
         'scipy',
         'ddt',
-        'pytest'
+        'pytest',
+        'tqdm',
+        'scikit-image'
     ],
 )
