@@ -66,6 +66,7 @@ def ssim(img1: np.ndarray, img2: np.ndarray) -> float:
     float:
         SSIM between the two input images
     """
+    img1, img2 = unify_shape(img1, img2)
     return structural_similarity(img1 * 1., img2 * 1., full=False)
 
 
