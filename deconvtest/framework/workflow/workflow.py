@@ -191,6 +191,11 @@ class Workflow:
             stat_filename_pattern=stat_filename_pattern,
             outputs=outputs
         )
+        stats = pd.DataFrame()
+        for fn in os.listdir(self.output_path):
+            if fn.endswith('csv'):
+                stats = pd.concat([stats, pd.read_csv(os.path.join(self.output_path, fn))], ignore_index=True)
+        stats.to_csv(os.path.join(self.output_path, '..', self.name + '.csv'), index=False)
 
 
 def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
