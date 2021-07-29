@@ -9,6 +9,7 @@ setup(
               'deconvtest.modules',
               'deconvtest.modules.ground_truth',
               'deconvtest.modules.psf',
+              'deconvtest.modules.convolution',
               'deconvtest.modules.transforms',
               'deconvtest.modules.deconvolution',
               'deconvtest.modules.evaluation',
