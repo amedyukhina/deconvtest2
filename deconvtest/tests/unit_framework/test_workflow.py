@@ -148,6 +148,21 @@ class TestWorkflow(unittest.TestCase):
         s = Step('Convolution', 'convolve')
         self.assertRaises(IndexError, w.add_step, s, input_step=[1, 2])
 
+    def test_multiple_evaluation_methods(self):
+        w = Workflow(name='test workflow')
+
+        s = Step('GroundTruth', 'ellipsoid')
+        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]], mode='align', base_name='GT')
+        w.add_step(s)
+
+        s = Step('Transform', 'poisson_noise')
+        s.specify_parameters(img='pipeline', snr=[2, 5], base_name='noise')
+        w.add_step(s)
+
+        s = Step('Evaluation', method=['rmse', 'nrmse'])
+        s.specify_parameters(img1='pipeline', img2='pipeline')
+        w.add_step(s, input_step=[0, 1])
+
 
 if __name__ == '__main__':
     unittest.main()

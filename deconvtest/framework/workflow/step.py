@@ -3,6 +3,7 @@ import itertools
 import json
 import os
 import warnings
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -17,13 +18,14 @@ class Step:
     class for a workflow step
     """
 
-    def __init__(self, step_name: str, method: str = None):
+    def __init__(self, step_name: str, method: Union[str, list] = None):
         self.name = step_name
         self.parameters = pd.DataFrame()
         self.path = None
         self.n_inputs = None
         self.n_outputs = None
         self.method = None
+        self.methods = []
         self.step = None
         self.input_step = None
         self.valid_parameters = None
@@ -41,7 +43,12 @@ class Step:
 
         self.available_methods = self.list_available_methods()
         if method is not None:
-            self.add_method(method)
+            if type(method) is list:
+                for m in method:
+                    self.add_method(m, append=True)
+                self.method = self.methods
+            else:
+                self.add_method(method, append=False)
 
     def to_dict(self):
         step = dict()
@@ -76,10 +83,13 @@ class Step:
         module = self.step()
         return module.list_available_modules_names()
 
-    def add_method(self, method: str):
+    def add_method(self, method: str, append=False):
         if method in self.available_methods:
-            self.method = method
-            module = self.step(self.method)
+            if append:
+                self.methods.append(method)
+            else:
+                self.method = method
+            module = self.step(method)
             self.n_inputs = module.n_inputs
             self.n_outputs = module.n_outputs
             self.valid_parameters = self.list_parameters()
@@ -98,7 +108,10 @@ class Step:
         if self.method is None:
             raise ModuleNotFoundError(rf'No method is defined for step {self.name} to specify parameters!')
         else:
-            module = self.step(self.method)
+            if type(self.method) is list:
+                module = self.step(self.method[0])
+            else:
+                module = self.step(self.method)
             module_param_names = [param.name for param in module.parameters]
         return module, module_param_names
 

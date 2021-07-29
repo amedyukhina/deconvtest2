@@ -41,7 +41,7 @@ class TestWorkflow(unittest.TestCase):
         s.save_parameters(os.path.join(path, path_noise))
         w.add_step(s)
 
-        s = Step('Evaluation', 'rmse')
+        s = Step('Evaluation', ['rmse', 'nrmse'])
         s.specify_parameters(img1='pipeline', img2='pipeline')
         w.add_step(s, input_step=[0, 3])
 

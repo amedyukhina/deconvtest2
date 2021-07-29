@@ -41,7 +41,7 @@ class Workflow:
             self.output_path = output_path
 
     def add_step(self, step: Step, input_step: Union[int, list] = None):
-        if step.method is None:
+        if step.method is None and len(step.methods) == 0:
             raise ValueError(rf"Step {step.name} does not have a method. "
                              "First specify the method by `step.add_method(method)`")
         if step.n_inputs > len(self.steps):
@@ -218,11 +218,22 @@ def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
             else:
                 inputs = []
 
-            module = Step(name, method).step(method=method)
-            output = module.run(*inputs, **step_kwargs)
+            if name == 'Evaluation' and type(method) is list:
+                output = []
+                for m in method:
+                    module = Step(name, m).step(method=m)
+                    output.append(module.run(*inputs, **step_kwargs))
+            else:
+                module = Step(name, method).step(method=method)
+                output = module.run(*inputs, **step_kwargs)
+
             if name == 'Evaluation':
-                stat = pd.DataFrame({'OutputID': [outputID],
-                                     method: [output]})
+                stat = pd.DataFrame({'OutputID': [outputID]})
+                if type(method) is list:
+                    for m, o in zip(method, output):
+                        stat[m] = o
+                else:
+                    stat[method] = output
                 stat.to_csv(stat_filename_pattern % outputID, index=False)
             else:
                 with warnings.catch_warnings():
