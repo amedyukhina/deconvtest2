@@ -12,3 +12,5 @@ class InputModule(Module):
                                           parent_name=parent_name)
         self.n_inputs = 0
         self.n_outputs = 1
+        self.type_input = None
+        self.type_output = 'image'

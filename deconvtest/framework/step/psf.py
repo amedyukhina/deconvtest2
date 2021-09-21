@@ -1,4 +1,4 @@
-from ...framework.module.inputmodule import InputModule
+from ...framework.step.inputmodule import InputModule
 
 
 class PSF(InputModule):

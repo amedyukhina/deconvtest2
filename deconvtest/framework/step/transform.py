@@ -13,3 +13,5 @@ class Transform(Module):
                                         parent_name=parent_name)
         self.n_inputs = 1
         self.n_outputs = 1
+        self.type_input = 'image'
+        self.type_output = 'image'

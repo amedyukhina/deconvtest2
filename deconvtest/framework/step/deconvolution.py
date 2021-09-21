@@ -1,6 +1,8 @@
 from ...framework.step.transform import Transform
 
 
+## TODO: create an intermediate class "External transform"
+
 class Deconvolution(Transform):
     """
     Deconvolution module

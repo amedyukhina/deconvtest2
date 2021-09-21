@@ -1,7 +1,7 @@
-from ...framework.module.module import Module
+from ...framework.step.combine import Combine
 
 
-class Convolution(Module):
+class Convolution(Combine):
     """
     Transform module
     """
@@ -12,5 +12,3 @@ class Convolution(Module):
         super(Convolution, self).__init__(method=method,
                                           parameters=parameters,
                                           parent_name=parent_name)
-        self.n_inputs = 2
-        self.n_outputs = 1
