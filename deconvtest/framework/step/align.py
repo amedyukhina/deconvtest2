@@ -6,7 +6,7 @@ class Align(Module):
     Transform module
     """
 
-    def __init__(self, method: str = 'align',
+    def __init__(self, method: str = None,
                  parameters: dict = None,
                  parent_name: str = 'deconvtest.modules'):
         super(Align, self).__init__(method=method,

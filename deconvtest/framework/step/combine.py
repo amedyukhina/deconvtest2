@@ -6,7 +6,7 @@ class Combine(Module):
     Transform module
     """
 
-    def __init__(self, method: str = 'combine',
+    def __init__(self, method: str = None,
                  parameters: dict = None,
                  parent_name: str = 'deconvtest.modules'):
         super(Combine, self).__init__(method=method,
