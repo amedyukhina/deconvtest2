@@ -118,7 +118,7 @@ class Workflow:
                 item = dict(name=rf'item00')
                 item['steps'] = []
                 step = dict(name=master_step.name, method=master_step.method)
-                step['outputID'] = ''
+                step['outputID'] = master_step.name + '0000'
                 item['steps'].append(step)
                 block['items'].append(item)
 
