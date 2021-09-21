@@ -3,11 +3,9 @@ import shutil
 import unittest
 
 import numpy as np
-import pandas as pd
 from ddt import ddt
 
 from ...framework.workflow.step import Step
-from ...framework.workflow.utils import generate_id_table
 from ...framework.workflow.workflow import Workflow
 
 
@@ -51,27 +49,28 @@ class TestWorkflow(unittest.TestCase):
         w2.load(os.path.join(path, wpath))
         path_graph = 'workflow_graph.json'
         w2.save_workflow_graph(os.path.join(path, path_graph))
+        print(w2.get_workflow_graph())
 
         w2.run(verbose=False)
         files = os.listdir(os.path.join(path, 'data'))
         shutil.rmtree(path)
         self.assertEqual(len(files), 32)
 
-    def test_id_table(self):
-        path = 'test_workflow'
-        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
-
-        s = Step('GroundTruth', 'ellipsoid')
-        path_gt = 'params_ellipsoid.csv'
-        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
-                             theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='permute', base_name='GT')
-        s.save_parameters(os.path.join(path, path_gt))
-        w.add_step(s)
-        w.run(verbose=False)
-        generate_id_table(os.path.join(path, 'data'), os.path.join(path, 'id_table.csv'))
-        ids = pd.read_csv(os.path.join(path, 'id_table.csv'))
-        self.assertEqual(len(ids), 8)
-        shutil.rmtree(path)
+    # def test_id_table(self):
+    #     path = 'test_workflow'
+    #     w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
+    #
+    #     s = Step('GroundTruth', 'ellipsoid')
+    #     path_gt = 'params_ellipsoid.csv'
+    #     s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
+    #                          theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='permute', base_name='GT')
+    #     s.save_parameters(os.path.join(path, path_gt))
+    #     w.add_step(s)
+    #     w.run(verbose=False)
+    #     generate_id_table(os.path.join(path, 'data'), os.path.join(path, 'id_table.csv'))
+    #     ids = pd.read_csv(os.path.join(path, 'id_table.csv'))
+    #     self.assertEqual(len(ids), 8)
+    #     shutil.rmtree(path)
 
 
 if __name__ == '__main__':

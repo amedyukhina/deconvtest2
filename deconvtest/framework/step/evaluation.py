@@ -1,7 +1,7 @@
-from ...framework.module.module import Module
+from ...framework.step.align import Align
 
 
-class Evaluation(Module):
+class Evaluation(Align):
     """
     Evaluation module
     """
@@ -10,5 +10,5 @@ class Evaluation(Module):
         super(Evaluation, self).__init__(method=method,
                                          parameters=parameters,
                                          parent_name='deconvtest.modules.evaluation')
-        self.n_inputs = 2
-        self.n_outputs = 0
+        self.type_output = 'number'
+
