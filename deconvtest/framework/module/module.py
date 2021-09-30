@@ -23,6 +23,7 @@ class Module:
         self.n_inputs = None
         self.n_outputs = None
         self.inputs = None
+        self.align = False
 
         if method is not None:
             self.import_method(method)

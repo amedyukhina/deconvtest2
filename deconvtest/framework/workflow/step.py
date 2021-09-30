@@ -24,6 +24,9 @@ class Step:
         self.path = None
         self.n_inputs = None
         self.n_outputs = None
+        self.type_input = None
+        self.type_output = 'image'
+        self.align = False
         self.method = None
         self.methods = []
         self.step = None

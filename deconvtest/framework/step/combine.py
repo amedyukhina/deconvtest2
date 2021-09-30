@@ -16,4 +16,3 @@ class Combine(Module):
         self.n_outputs = 1
         self.type_input = ['image', 'image']
         self.type_output = 'image'
-        self.align = False
