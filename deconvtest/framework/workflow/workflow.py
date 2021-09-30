@@ -200,7 +200,7 @@ class Workflow:
                 for st in iter_item['modules']:
                     item['modules'].append(copy.deepcopy(st))
                 outputID = outputID + iter_item['modules'][-1]['outputID'] + '_'
-                inputIDs.append(iter_item['steps'][-1]['outputID'])
+                inputIDs.append(iter_item['modules'][-1]['outputID'])
             combined_block['items'].append(item)
             combined_block['items'][i]['modules'][-1]['inputIDs'] = inputIDs[:len(step.input_step)]
             combined_block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_')
