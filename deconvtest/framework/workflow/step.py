@@ -52,6 +52,9 @@ class Step:
                 self.module = av_module[0]
                 self.n_inputs = av_module[0]().n_inputs
                 self.n_outputs = av_module[0]().n_outputs
+                self.type_input = av_module[0]().type_input
+                self.type_output = av_module[0]().type_output
+                self.align = av_module[0]().align
         if self.module is None:
             raise_not_valid_step_error(self.name, self.available_modules)
 
@@ -246,7 +249,7 @@ class Step:
         if self.method is not None:
             step['method'] = self.method
             step['parameter_path'] = self.path
-            step['number of module_base combinations'] = len(self.parameters)
+            step['number of parameter combinations'] = len(self.parameters)
             step['input step'] = self.input_step
             if len(self.parameters) == 0 and self.valid_parameters is not None:
                 step['valid parameters'] = [str(p) for p in self.valid_parameters]
