@@ -49,7 +49,7 @@ class TestWorkflow(unittest.TestCase):
         w.run(verbose=False)
         files = os.listdir(os.path.join(path, 'data'))
         shutil.rmtree(path)
-        self.assertEqual(len(files), 32)
+        self.assertEqual(len(files), 24)
 
 
 if __name__ == '__main__':

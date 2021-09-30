@@ -98,13 +98,12 @@ class Workflow:
     def get_workflow_graph(self, to_json=False):
         blocks = []
         for step in self.steps:
-            # print(step.name, step.n_inputs, step.align)
             block = dict(name=rf'block{len(blocks):02d}', items=[])
             block = self.__add_items_to_block(step, block)
 
             if step.n_inputs > 0:
                 if step.n_inputs == 2 and step.align is True:
-                    pass
+                    blocks = self.__align_items(step, block, blocks)
                 else:
                     blocks = self.__permute_items(step, block, blocks)
             else:
@@ -144,6 +143,7 @@ class Workflow:
         # run the workflow in parallel
         run_parallel(
             process=run_item,
+            process_name='Running the workflow',
             print_progress=verbose,
             items=self.workflow['items'],
             max_threads=njobs,
@@ -201,13 +201,40 @@ class Workflow:
                     item['modules'].append(copy.deepcopy(st))
                 outputID = outputID + iter_item['modules'][-1]['outputID'] + '_'
                 inputIDs.append(iter_item['modules'][-1]['outputID'])
-            combined_block['items'].append(item)
-            combined_block['items'][i]['modules'][-1]['inputIDs'] = inputIDs[:len(step.input_step)]
-            combined_block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_')
-            # if step.name == 'Evaluation':
-            #     nblock['items'][i]['steps'][-1]['outputID'] = inputIDs[0] + '_vs_' + inputIDs[1]
+            combined_block = self.__add_ids(combined_block, i, item, inputIDs, outputID, step)
         blocks.append(combined_block)
         return blocks
+
+    def __align_items(self, step, new_block, blocks):
+        lists = []
+        for input_step in step.input_step:
+            lists.append(blocks[input_step]['items'])
+        if len(new_block['items']) > 0:
+            lists.append(new_block['items'])
+        i = 0
+        combined_block = dict(name=rf'updated_block{len(blocks):02d}')
+        combined_block['items'] = []
+        for items in itertools.product(*lists):
+            if items[0]['modules'][0]['outputID'] == items[1]['modules'][0]['outputID']:
+                item = dict(name=rf'item{i:03d}')
+                item['modules'] = []
+                for st in items[1]['modules']:
+                    item['modules'].append(copy.deepcopy(st))
+                item['modules'].append(copy.deepcopy(items[2]['modules'][0]))
+
+                outputID = items[1]['modules'][-1]['outputID'] + '_' + items[2]['modules'][-1]['outputID']
+                inputIDs = [items[1]['modules'][-1]['outputID'], items[0]['modules'][-1]['outputID']]
+                combined_block = self.__add_ids(combined_block, i, item, inputIDs, outputID, step)
+
+                i += 1
+        blocks.append(combined_block)
+        return blocks
+
+    def __add_ids(self, block, i, item, inputIDs, outputID, step):
+        block['items'].append(item)
+        block['items'][i]['modules'][-1]['inputIDs'] = inputIDs[:len(step.input_step)]
+        block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_')
+        return block
 
 
 def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
