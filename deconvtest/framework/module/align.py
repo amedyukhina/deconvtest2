@@ -1,4 +1,4 @@
-from ...framework.module.module import Module
+from deconvtest.framework.module_base.module import Module
 
 
 class Align(Module):
@@ -8,7 +8,7 @@ class Align(Module):
 
     def __init__(self, method: str = None,
                  parameters: dict = None,
-                 parent_name: str = 'deconvtest.modules'):
+                 parent_name: str = 'deconvtest.methods'):
         super(Align, self).__init__(method=method,
                                     parameters=parameters,
                                     parent_name=parent_name)

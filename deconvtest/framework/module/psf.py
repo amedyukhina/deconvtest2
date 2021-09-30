@@ -1,4 +1,4 @@
-from ...framework.step.inputmodule import InputModule
+from deconvtest.framework.module.inputmodule import InputModule
 
 
 class PSF(InputModule):
@@ -9,4 +9,4 @@ class PSF(InputModule):
     def __init__(self, method: str = None, parameters: dict = None):
         super(PSF, self).__init__(method=method,
                                   parameters=parameters,
-                                  parent_name='deconvtest.modules.psf')
+                                  parent_name='deconvtest.methods.psf')

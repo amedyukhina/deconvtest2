@@ -15,11 +15,11 @@ from skimage import io
 from .step import Step
 from ...core.utils.conversion import keys_to_list
 from ...core.utils.utils import list_modules
-from ...framework import step as workflow_steps
+from ...framework import module as available_steps
 
 
 def list_available_steps():
-    steps = list_modules(workflow_steps, module_type=inspect.isclass)
+    steps = list_modules(available_steps, module_type=inspect.isclass)
     steps = np.unique([st[0].__name__ for st in steps])
     steps = [Step(st) for st in steps]
     return steps
@@ -34,7 +34,7 @@ class Workflow:
         self.name = name
         self.available_steps = list_available_steps()
         self.steps = []
-        self.path = None
+        self.filename = None
         self.workflow = None
         self.output_path = name.replace(' ', '_')
         if output_path is not None:
@@ -63,7 +63,7 @@ class Workflow:
     def to_dict(self):
         workflow = dict()
         workflow['name'] = self.name
-        workflow['path'] = self.path
+        workflow['filename'] = self.filename
         workflow['output path'] = self.output_path
         workflow['steps'] = [step.to_dict() for step in self.steps]
         return workflow
@@ -71,23 +71,23 @@ class Workflow:
     def __repr__(self):
         return json.dumps(self.to_dict(), indent=4)
 
-    def save(self, path: str = None):
-        if path is not None:
-            self.path = path
+    def save(self, filename: str = None):
+        if filename is not None:
+            self.filename = filename
 
-        if self.path is None:
+        if self.filename is None:
             raise ValueError('Path must be provided!')
         else:
-            if not os.path.exists(os.path.dirname(path)) and os.path.dirname(path) != '':
-                os.makedirs(os.path.dirname(path))
-            with open(path, 'w') as f:
+            if not os.path.exists(os.path.dirname(filename)) and os.path.dirname(filename) != '':
+                os.makedirs(os.path.dirname(filename))
+            with open(filename, 'w') as f:
                 json.dump(self.to_dict(), f)
 
-    def load(self, path: str):
-        with open(path) as f:
+    def load(self, filename: str):
+        with open(filename) as f:
             workflow = json.load(f)
         self.name = workflow['name']
-        self.path = path
+        self.filename = filename
         self.output_path = workflow['output path']
         self.steps = []
         for step in workflow['steps']:
@@ -97,60 +97,16 @@ class Workflow:
 
     def get_workflow_graph(self, to_json=False):
         blocks = []
-        for master_step in self.steps:
-            print(master_step.name, master_step.n_inputs, master_step.align)
-            block = dict(name=rf'block{len(blocks):02d}')
-            block['items'] = []
-            for i in range(len(master_step.parameters)):
-                item = dict(name=rf'item{i:02d}')
-                item['steps'] = []
-                step = dict(name=master_step.name, method=master_step.method)
-                params = dict(master_step.parameters.iloc[i])
-                params = keys_to_list(params)
-                for key in params.keys():
-                    try:
-                        step[key] = params[key].item()
-                    except AttributeError:
-                        step[key] = params[key]
-                step['outputID'] = step.pop('ID')
-                item['steps'].append(step)
-                block['items'].append(item)
-            if len(master_step.parameters) == 0:
-                item = dict(name=rf'item00')
-                item['steps'] = []
-                step = dict(name=master_step.name, method=master_step.method)
-                step['outputID'] = master_step.name + '0000'
-                item['steps'].append(step)
-                block['items'].append(item)
+        for step in self.steps:
+            # print(step.name, step.n_inputs, step.align)
+            block = dict(name=rf'block{len(blocks):02d}', items=[])
+            block = self.__add_items_to_block(step, block)
 
-            if master_step.n_inputs > 0:
-                if master_step.n_inputs == 2 and master_step.align is True:
+            if step.n_inputs > 0:
+                if step.n_inputs == 2 and step.align is True:
                     pass
                 else:
-                    lists = []
-                    for input_step in master_step.input_step:
-                        lists.append(blocks[input_step]['items'])
-                    if len(block['items']) > 0:
-                        lists.append(block['items'])
-
-                    nblock = dict(name=rf'updated_block{len(blocks):02d}')
-                    nblock['items'] = []
-                    for i, items in enumerate(itertools.product(*lists)):
-                        item = dict(name=rf'item{i:03d}')
-                        item['steps'] = []
-                        outputID = ''
-                        inputIDs = []
-                        for iter_item in items:
-                            for st in iter_item['steps']:
-                                item['steps'].append(copy.deepcopy(st))
-                            outputID = outputID + iter_item['steps'][-1]['outputID'] + '_'
-                            inputIDs.append(iter_item['steps'][-1]['outputID'])
-                        nblock['items'].append(item)
-                        nblock['items'][i]['steps'][-1]['inputIDs'] = inputIDs[:len(master_step.input_step)]
-                        nblock['items'][i]['steps'][-1]['outputID'] = outputID.rstrip('_')
-                        # if master_step.name == 'Evaluation':
-                        #     nblock['items'][i]['steps'][-1]['outputID'] = inputIDs[0] + '_vs_' + inputIDs[1]
-                    blocks.append(nblock)
+                    blocks = self.__permute_items(step, block, blocks)
             else:
                 blocks.append(block)
         self.workflow = blocks[-1]
@@ -181,7 +137,7 @@ class Workflow:
         # store filenames for the outputs
         outputs = dict()
         for item in self.workflow['items']:
-            steps = item['steps']
+            steps = item['modules']
             for step_kwargs in steps:
                 outputs[step_kwargs['outputID']] = img_filename_pattern % step_kwargs['outputID']
 
@@ -201,9 +157,61 @@ class Workflow:
                 stats = pd.concat([stats, pd.read_csv(os.path.join(self.output_path, fn))], ignore_index=True)
         stats.to_csv(os.path.join(self.output_path, '..', self.name + '.csv'), index=False)
 
+    def __add_params_to_module(self, params, module):
+        params = dict(params)
+        params = keys_to_list(params)
+        for key in params.keys():
+            try:
+                module[key] = params[key].item()
+            except AttributeError:
+                module[key] = params[key]
+        return module
+
+    def __add_items_to_block(self, step, block):
+        for i in range(len(step.parameters)):
+            module = dict(name=step.name, method=step.method)
+            module = self.__add_params_to_module(step.parameters.iloc[i], module)
+            module['outputID'] = module.pop('ID')
+            item = dict(name=rf'item{i:02d}', modules=[module])
+            block['items'].append(item)
+
+        if len(step.parameters) == 0:
+            module = dict(name=step.name, method=step.method)
+            module['outputID'] = step.name + '0000'
+            item = dict(name=rf'item00', modules=[module])
+            block['items'].append(item)
+        return block
+
+    def __permute_items(self, step, new_block, blocks):
+        lists = []
+        for input_step in step.input_step:
+            lists.append(blocks[input_step]['items'])
+        if len(new_block['items']) > 0:
+            lists.append(new_block['items'])
+
+        combined_block = dict(name=rf'updated_block{len(blocks):02d}')
+        combined_block['items'] = []
+        for i, items in enumerate(itertools.product(*lists)):
+            item = dict(name=rf'item{i:03d}')
+            item['modules'] = []
+            outputID = ''
+            inputIDs = []
+            for iter_item in items:
+                for st in iter_item['modules']:
+                    item['modules'].append(copy.deepcopy(st))
+                outputID = outputID + iter_item['modules'][-1]['outputID'] + '_'
+                inputIDs.append(iter_item['steps'][-1]['outputID'])
+            combined_block['items'].append(item)
+            combined_block['items'][i]['modules'][-1]['inputIDs'] = inputIDs[:len(step.input_step)]
+            combined_block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_')
+            # if step.name == 'Evaluation':
+            #     nblock['items'][i]['steps'][-1]['outputID'] = inputIDs[0] + '_vs_' + inputIDs[1]
+        blocks.append(combined_block)
+        return blocks
+
 
 def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
-    steps = item['steps']
+    steps = item['modules']
     for step_kwargs in steps:
         name = step_kwargs.pop('name')
         method = step_kwargs.pop('method')
@@ -230,10 +238,10 @@ def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
             if name == 'Evaluation' and type(method) is list:
                 output = []
                 for m in method:
-                    module = Step(name, m).step(method=m)
+                    module = Step(name, m).module(method=m)
                     output.append(module.run(*inputs, **step_kwargs))
             else:
-                module = Step(name, method).step(method=method)
+                module = Step(name, method).module(method=method)
                 output = module.run(*inputs, **step_kwargs)
 
             if name == 'Evaluation':

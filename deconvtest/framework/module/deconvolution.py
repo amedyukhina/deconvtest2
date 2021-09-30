@@ -1,4 +1,4 @@
-from ...framework.step.transform import Transform
+from deconvtest.framework.module.transform import Transform
 
 
 ## TODO: create an intermediate class "External transform"
@@ -11,4 +11,4 @@ class Deconvolution(Transform):
     def __init__(self, method: str = None, parameters: dict = None):
         super(Deconvolution, self).__init__(method=method,
                                             parameters=parameters,
-                                            parent_name='deconvtest.modules.deconvolution')
+                                            parent_name='deconvtest.methods.deconvolution')

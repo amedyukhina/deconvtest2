@@ -1,4 +1,4 @@
-from ...framework.module.module import Module
+from deconvtest.framework.module_base.module import Module
 
 
 class Transform(Module):
@@ -7,7 +7,7 @@ class Transform(Module):
     """
 
     def __init__(self, method: str = None, parameters: dict = None,
-                 parent_name: str = 'deconvtest.modules.transforms'):
+                 parent_name: str = 'deconvtest.methods.transforms'):
         super(Transform, self).__init__(method=method,
                                         parameters=parameters,
                                         parent_name=parent_name)

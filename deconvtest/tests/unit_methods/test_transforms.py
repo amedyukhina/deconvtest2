@@ -3,8 +3,8 @@ import unittest
 import numpy as np
 from ddt import ddt, data
 
-from ...modules.convolution.convolution_modules import convolve
-from ...modules.transforms.transform_modules import poisson_noise
+from ...methods.convolution.convolve import convolve
+from ...methods.transforms.poisson_noise import poisson_noise
 
 
 @ddt

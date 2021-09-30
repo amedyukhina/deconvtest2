@@ -1,89 +1,14 @@
 import os
+import shutil
 import unittest
-import warnings
 
-from ddt import ddt, data
+import numpy as np
+import pandas as pd
+from ddt import ddt
 
 from ...framework.workflow.step import Step
+from ...framework.workflow.utils import generate_id_table
 from ...framework.workflow.workflow import Workflow
-
-
-@ddt
-class TestStep(unittest.TestCase):
-
-    @data(
-        'PSF',
-        'Evaluation',
-        'GroundTruth',
-        'Transform',
-        'Deconvolution'
-    )
-    def test_step(self, method):
-        step = Step(method)
-        self.assertIsNotNone(step.step)
-
-    @data(
-        'wrong_step1',
-        'wrong_step2'
-    )
-    def test_wrong_step(self, method):
-        self.assertRaises(ValueError, Step, method)
-
-    def test_list_step_methods(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            s = Step("PSF")
-            self.assertIn('gaussian', s.list_available_methods())
-
-    def test_add_method(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            s = Step('PSF')
-            s.add_method('gaussian')
-            self.assertIsNotNone(s.method)
-
-    def test_add_wrong_method(self):
-        s = Step('PSF')
-        self.assertRaises(ValueError, s.add_method, 'wrong_method')
-
-    def test_list_parameter(self):
-        s = Step('PSF', 'gaussian')
-        self.assertEqual(len(s.list_parameters()), 3)
-
-    def test_list_parameters_emtpy(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            s = Step('PSF')
-            self.assertIsNone(s.list_parameters())
-
-    def test_specify_parameters_missing_argument(self):
-        s = Step('PSF', 'gaussian')
-        self.assertRaises(ValueError, s.specify_parameters, aspect=[2, 3])
-
-    def test_specify_parameters_no_module(self):
-        s = Step('PSF')
-        self.assertRaises(ModuleNotFoundError, s.specify_parameters, sigma=[3])
-
-    def test_specify_parameters(self):
-        s = Step('PSF', 'gaussian')
-        params = s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
-        self.assertEqual(len(params), 3)
-        params = s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='permute')
-        self.assertEqual(len(params), 9)
-
-    def test_add_parameters(self):
-        s = Step('PSF', 'gaussian')
-        s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
-        s.specify_parameters(sigma=4, overwrite=False)
-        self.assertEqual(len(s.parameters), 4)
-
-    def test_saving_parameters(self):
-        s = Step('PSF', 'gaussian')
-        path = 'test.csv'
-        s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
-        s.save_parameters(path)
-        self.assertTrue(os.path.exists(path))
-        os.remove(path)
 
 
 @ddt
@@ -162,6 +87,44 @@ class TestWorkflow(unittest.TestCase):
         s = Step('Evaluation', method=['rmse', 'nrmse'])
         s.specify_parameters(img1='pipeline', img2='pipeline')
         w.add_step(s, input_step=[0, 1])
+
+    def test_workflow(self):
+        path = 'test_workflow'
+        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
+
+        s = Step('GroundTruth', 'ellipsoid')
+        path_gt = 'params_ellipsoid.csv'
+        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]], mode='align', base_name='GT')
+        s.save_parameters(os.path.join(path, path_gt))
+        w.add_step(s)
+
+        wpath = 'workflow.json'
+        w.save(os.path.join(path, wpath))
+        w2 = Workflow()
+        w2.load(os.path.join(path, wpath))
+        path_graph = 'workflow_graph.json'
+        w2.save_workflow_graph(os.path.join(path, path_graph))
+        self.assertEqual(str(w.get_workflow_graph()), str(w2.get_workflow_graph()))
+        w2.run(verbose=False)
+        files = os.listdir(os.path.join(path, 'data'))
+        shutil.rmtree(path)
+        self.assertEqual(len(files), 2)
+
+    def test_id_table(self):
+        path = 'test_workflow'
+        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
+
+        s = Step('GroundTruth', 'ellipsoid')
+        path_gt = 'params_ellipsoid.csv'
+        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
+                             theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='permute', base_name='GT')
+        s.save_parameters(os.path.join(path, path_gt))
+        w.add_step(s)
+        w.run(verbose=False)
+        generate_id_table(os.path.join(path, 'data'), os.path.join(path, 'id_table.csv'))
+        ids = pd.read_csv(os.path.join(path, 'id_table.csv'))
+        self.assertEqual(len(ids), 8)
+        shutil.rmtree(path)
 
 
 if __name__ == '__main__':

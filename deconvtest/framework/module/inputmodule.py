@@ -1,4 +1,4 @@
-from ..module.module import Module
+from deconvtest.framework.module_base.module import Module
 
 
 class InputModule(Module):
@@ -6,7 +6,7 @@ class InputModule(Module):
     Image module (ground truth or PSF)
     """
 
-    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest.modules'):
+    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest.methods'):
         super(InputModule, self).__init__(method=method,
                                           parameters=parameters,
                                           parent_name=parent_name)

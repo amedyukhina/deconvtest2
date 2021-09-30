@@ -5,6 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .errors import raise_not_valid_type_error
+
 MODULE_EXTENSIONS = '.py'
 
 
@@ -12,7 +14,7 @@ def check_type(names, variables, types):
     for name, var, t in zip(names, variables, types):
         t = list(np.array([t]).flatten())
         if not type(var) in t:
-            raise TypeError("Type of '{}' must be one of: {}; '{}' provided!".format(name, t, type(var).__name__))
+            raise_not_valid_type_error(type(var).__name__, name, t)
 
 
 def is_valid_type(variable, valid_type):

@@ -4,7 +4,8 @@ import numpy as np
 from ddt import ddt, data
 from skimage.metrics import normalized_root_mse
 
-from ...modules.evaluation.evaluation_modules import rmse, nrmse
+from ...methods.evaluation.rmse import rmse
+from ...methods.evaluation.nrmse import nrmse
 
 
 @ddt

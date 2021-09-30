@@ -1,4 +1,4 @@
-from ...framework.step.combine import Combine
+from deconvtest.framework.module.combine import Combine
 
 
 class Convolution(Combine):
@@ -8,7 +8,7 @@ class Convolution(Combine):
 
     def __init__(self, method: str = 'convolve',
                  parameters: dict = None,
-                 parent_name: str = 'deconvtest.modules.convolution'):
+                 parent_name: str = 'deconvtest.methods.convolution'):
         super(Convolution, self).__init__(method=method,
                                           parameters=parameters,
                                           parent_name=parent_name)

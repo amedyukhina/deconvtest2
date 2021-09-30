@@ -4,12 +4,12 @@ import warnings
 import numpy as np
 from ddt import ddt, data
 
-from ...framework.module.module import Module
-from ...framework.step.convolution import Convolution
-from ...framework.step.deconvolution import Deconvolution
-from ...framework.step.evaluation import Evaluation
-from ...framework.step.ground_truth import GroundTruth
-from ...framework.step.psf import PSF
+from deconvtest.framework.module.convolution import Convolution
+from deconvtest.framework.module.deconvolution import Deconvolution
+from deconvtest.framework.module.evaluation import Evaluation
+from deconvtest.framework.module.ground_truth import GroundTruth
+from deconvtest.framework.module.psf import PSF
+from deconvtest.framework.module_base.module import Module
 
 
 @ddt

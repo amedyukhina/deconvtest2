@@ -1,4 +1,4 @@
-from ...framework.step.inputmodule import InputModule
+from deconvtest.framework.module.inputmodule import InputModule
 
 
 class GroundTruth(InputModule):
@@ -9,4 +9,4 @@ class GroundTruth(InputModule):
     def __init__(self, method: str = None, parameters: dict = None):
         super(GroundTruth, self).__init__(method=method,
                                           parameters=parameters,
-                                          parent_name='deconvtest.modules.ground_truth')
+                                          parent_name='deconvtest.methods.ground_truth')

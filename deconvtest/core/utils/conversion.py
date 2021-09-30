@@ -56,7 +56,8 @@ def unify_shape(x: np.ndarray, y: np.ndarray):
     out = []
     for arr in [x, y]:
         shape_diff = (nshape - np.array(arr.shape))
-        pad_width = [(int(shape_diff[i] / 2), shape_diff[i] - int(shape_diff[i] / 2)) for i in range(len(shape_diff))]
+        pad_width = [(int(shape_diff[i] / 2), shape_diff[i] - int(shape_diff[i] / 2))
+                     for i in range(len(shape_diff))]
         out.append(np.pad(arr, pad_width=pad_width, mode='constant', constant_values=0))
 
     return out

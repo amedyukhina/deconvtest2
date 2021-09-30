@@ -1,6 +1,6 @@
 class Parameter:
     """
-    Abstract parameter class
+    Abstract module_base class
     """
 
     def __init__(self, name, default_value=None, value=None, optional=True, parameter_type=None, doc=''):
@@ -9,15 +9,15 @@ class Parameter:
         Parameters
         ----------
         name : str
-            Name of the parameter
+            Name of the module_base
         default_value : type specified by `parameter_type`, optional
-            Default value of the parameter.
+            Default value of the module_base.
             Default is None.
         value : type specified by `parameter_type`, optional
             Parameter value.
             Default is None.
         optional : bool, optional
-            If True, the parameter is optional.
+            If True, the module_base is optional.
             Default is True
         parameter_type : type or typing.Union, optional
             Parameter type.
@@ -34,8 +34,5 @@ class Parameter:
         self.__doc__ = doc + '\n----\nvariables:\n- name\n- default_value\n- value\n- type'
 
     def __repr__(self):
-        return "Parameter: name={}, value={}, type={}, optional={}, default_value={}".format(self.name,
-                                                                                             self.value,
-                                                                                             self.type,
-                                                                                             self.optional,
-                                                                                             self.default_value)
+        return rf"Parameter: name={self.name}, value={self.value}, "\
+                rf"type={self.type}, optional={self.optional}, default_value={self.default_value}"

@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from ddt import ddt, data
 
-from ...modules.ground_truth.ground_truth_modules import ellipsoid
+from ...methods.ground_truth.ellipsoid import ellipsoid
 
 
 @ddt

@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from ddt import ddt, data
 
-from ...modules.psf.psf_modules import gaussian
+from ...methods.psf.gaussian import gaussian
 
 
 @ddt

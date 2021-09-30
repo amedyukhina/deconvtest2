@@ -1,0 +1,1 @@
+DEFAULT_PIPELINE_PARAM = 'pipeline'

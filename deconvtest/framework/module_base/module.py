@@ -1,7 +1,8 @@
 import importlib
 
-from ..module.parameter import Parameter
-from ...core.utils.utils import list_modules, is_valid_type
+from .parameter import Parameter
+from deconvtest.core.utils.utils import list_modules, is_valid_type
+from deconvtest.core.utils.errors import raise_not_valid_method_error, raise_not_valid_type_error
 
 
 class Module:
@@ -9,7 +10,7 @@ class Module:
     Abstract module class
     """
 
-    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest.modules'):
+    def __init__(self, method: str = None, parameters: dict = None, parent_name: str = 'deconvtest.methods'):
         if parameters is None:
             self.parameter_values = dict()
         else:
@@ -24,31 +25,33 @@ class Module:
         self.n_outputs = None
         self.inputs = None
         self.align = False
+        self.type_input = None
+        self.type_output = None
 
         if method is not None:
             self.import_method(method)
         if self.arg_spec is not None:
             self.add_parameters(self.arg_spec)
 
-    def list_available_modules(self):
+    def list_available_methods(self):
         parent_module = importlib.import_module(self.parent_name)
-        available_modules = list_modules(parent_module)
-        return available_modules
+        available_methods = list_modules(parent_module)
+        return available_methods
 
-    def list_available_modules_names(self):
-        available_modules = self.list_available_modules()
-        return [module[0].__name__ for module in available_modules]
+    def list_available_methods_names(self):
+        available_methods = self.list_available_methods()
+        return [method[0].__name__ for method in available_methods]
 
     def import_method(self, method):
-        available_modules = self.list_available_modules()
-        for module in available_modules:  # find a module with a matching name
-            if module[0].__name__ == method:
-                self.method = module[0]
-                self.arg_spec = module[1]
+        available_methods = self.list_available_methods()
+        for av_method in available_methods:  # find a module with a matching name
+            if av_method[0].__name__ == method:
+                self.method = av_method[0]
+                self.arg_spec = av_method[1]
 
         if self.method is None:  # raise an error if no matching module found
-            modules = self.list_available_modules_names()
-            raise ValueError(rf'{method} is not a valid {self.parent_name} module; available modules are: {modules}')
+            available_methods = self.list_available_methods_names()
+            raise_not_valid_method_error(method, self.parent_name, available_methods)
 
     def add_parameters(self, arg_spec):
         names = arg_spec.args
@@ -78,10 +81,8 @@ class Module:
         for parameter in self.parameters:
             if parameter.name in self.parameter_values.keys():
                 if not is_valid_type(self.parameter_values[parameter.name], parameter.type):
-                    raise ValueError(
-                        rf'{type(self.parameter_values[parameter.name])} is not a valid type for {parameter.name}; '
-                        f'valid types are: {parameter.type}')
-
+                    raise_not_valid_type_error(type(self.parameter_values[parameter.name]),
+                                               parameter.name, parameter.type)
             else:
                 # add default value if available, otherwise raise error
                 if parameter.optional is True:
