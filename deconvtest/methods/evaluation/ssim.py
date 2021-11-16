@@ -4,13 +4,13 @@ from skimage.metrics import structural_similarity
 from ...core.utils.conversion import unify_shape
 
 
-def ssim(img1: np.ndarray, img2: np.ndarray) -> float:
+def ssim(gt: np.ndarray, img: np.ndarray) -> float:
     """
     Compute Structural Similarity Index (SSIM) between two input images.
 
     Parameters
     ----------
-    img1, img2 : ndarray
+    gt, img : ndarray
         Input images of the same shape
 
     Returns
@@ -18,5 +18,5 @@ def ssim(img1: np.ndarray, img2: np.ndarray) -> float:
     float:
         SSIM between the two input images
     """
-    img1, img2 = unify_shape(img1, img2)
-    return structural_similarity(img1 * 1., img2 * 1., full=False)
+    gt, img = unify_shape(gt, img)
+    return structural_similarity(gt * 1., img * 1., full=False)

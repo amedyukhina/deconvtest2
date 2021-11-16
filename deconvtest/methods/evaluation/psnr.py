@@ -2,15 +2,15 @@ import numpy as np
 from skimage.metrics import peak_signal_noise_ratio
 
 
-def psnr(img1: np.ndarray, img2: np.ndarray) -> float:
+def psnr(gt: np.ndarray, img: np.ndarray) -> float:
     """
     Compute the peak signal to noise ratio (PSNR) for a test image
 
     Parameters
     ----------
-    img1 : ndarray
+    gt : ndarray
         Ground truth image
-    img2 : numpy.ndarray
+    img : numpy.ndarray
         Test image
 
     Returns
@@ -18,4 +18,4 @@ def psnr(img1: np.ndarray, img2: np.ndarray) -> float:
     float:
         PSNR for the test image
     """
-    return peak_signal_noise_ratio(img1 * 1., img2 * 1., data_range=np.max(img1) - np.min(img1))
+    return peak_signal_noise_ratio(gt * 1., img * 1., data_range=np.max(gt) - np.min(gt))
