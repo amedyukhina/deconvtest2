@@ -10,7 +10,7 @@ def read_stat(fn):
     return pd.read_csv(fn)
 
 
-def read_folder(fn):
+def read_file(fn):
     return fn
 
 
@@ -22,17 +22,19 @@ def write_stat(fn, output):
     output.to_csv(fn, index=False)
 
 
-def write_folder(fn, output):
+def write_file(fn, output):
     return
 
 
 READ_FN = dict(image=read_img,
                stat=read_stat,
-               folder=read_folder)
+               folder=read_file,
+               file=read_file)
 
 WRITE_FN = dict(image=write_img,
                 stat=write_stat,
-                folder=write_folder)
+                folder=write_file,
+                file=write_file)
 
 
 def read(fn, type_input):

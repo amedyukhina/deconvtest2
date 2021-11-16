@@ -1,4 +1,5 @@
 DEFAULT_PIPELINE_PARAM = 'pipeline'
 EXTENSIONS = dict(image='.tif',
                   stat='.csv',
-                  folder='')
+                  folder='',
+                  file='')
