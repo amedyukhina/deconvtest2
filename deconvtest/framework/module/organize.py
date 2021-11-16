@@ -14,6 +14,6 @@ class Organize(Align):
                                        parent_name=parent_name)
         self.n_inputs = 2
         self.n_outputs = 2
-        self.type_input = ['image', 'image']
+        self.type_input = ['file', 'file']
         self.type_output = ['folder', 'folder']
         self.align = True
