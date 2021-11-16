@@ -36,6 +36,7 @@ class Step:
         self.module = None
         self.input_step = None
         self.valid_parameters = None
+        self.add_id = True
 
         self.available_modules = list_modules(available_steps, module_type=inspect.isclass)
         self.set_module()
@@ -55,6 +56,7 @@ class Step:
                 self.type_input = av_module[0]().type_input
                 self.type_output = av_module[0]().type_output
                 self.align = av_module[0]().align
+                self.add_id = av_module[0]().add_id
         if self.module is None:
             raise_not_valid_step_error(self.name, self.available_modules)
 

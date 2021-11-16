@@ -1,8 +1,8 @@
 import importlib
 
-from .parameter import Parameter
-from deconvtest.core.utils.utils import list_modules, is_valid_type
 from deconvtest.core.utils.errors import raise_not_valid_method_error, raise_not_valid_type_error
+from deconvtest.core.utils.utils import list_modules, is_valid_type
+from .parameter import Parameter
 
 
 class Module:
@@ -27,6 +27,7 @@ class Module:
         self.align = False
         self.type_input = None
         self.type_output = None
+        self.add_id = True
 
         if method is not None:
             self.import_method(method)

@@ -17,3 +17,4 @@ class Organize(Align):
         self.type_input = ['file', 'file']
         self.type_output = ['folder', 'folder']
         self.align = True
+        self.add_id = False

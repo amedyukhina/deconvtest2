@@ -216,7 +216,9 @@ class Workflow:
                     item['modules'].append(copy.deepcopy(st))
                 item['modules'].append(copy.deepcopy(items[2]['modules'][0]))
 
-                outputID = items[1]['modules'][-1]['outputID'] + '_' + items[2]['modules'][-1]['outputID']
+                outputID = items[1]['modules'][-1]['outputID']
+                if step.add_id:
+                    outputID += '_' + items[2]['modules'][-1]['outputID']
                 inputIDs = [items[0]['modules'][-1]['outputID'], items[1]['modules'][-1]['outputID']]
                 combined_block = self.__add_ids(combined_block, i, item, inputIDs, outputID, step)
 
