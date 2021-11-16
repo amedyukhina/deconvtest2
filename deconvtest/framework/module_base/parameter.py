@@ -34,5 +34,5 @@ class Parameter:
         self.__doc__ = doc + '\n----\nvariables:\n- name\n- default_value\n- value\n- type'
 
     def __repr__(self):
-        return rf"Parameter: name={self.name}, value={self.value}, "\
-                rf"type={self.type}, optional={self.optional}, default_value={self.default_value}"
+        return rf"Parameter: name={self.name}, value={self.value}, " \
+               rf"type={self.type}, optional={self.optional}, default_value={self.default_value}"

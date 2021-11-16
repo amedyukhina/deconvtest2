@@ -11,4 +11,3 @@ class Evaluation(Align):
                                          parameters=parameters,
                                          parent_name='deconvtest.methods.evaluation')
         self.type_output = 'stat'
-

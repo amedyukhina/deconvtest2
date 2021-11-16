@@ -1,5 +1,6 @@
-from .constants import DEFAULT_PIPELINE_PARAM
 import warnings
+
+from .constants import DEFAULT_PIPELINE_PARAM
 
 
 def raise_not_valid_method_error(method, module_name, available_methods):
@@ -32,4 +33,3 @@ def raise_not_valid_type_pipeline_error(provided_type, var_name, valid_types):
         rf'{provided_type} is not a valid type for {var_name}; valid types are: {valid_types}'
         rf'\nIf the parameter is an input image that will be '
         rf'generated in another step of the pipeline, specify "{DEFAULT_PIPELINE_PARAM}"')
-
