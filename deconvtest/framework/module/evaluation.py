@@ -10,5 +10,5 @@ class Evaluation(Align):
         super(Evaluation, self).__init__(method=method,
                                          parameters=parameters,
                                          parent_name='deconvtest.methods.evaluation')
-        self.type_output = 'number'
+        self.type_output = 'stat'
 
