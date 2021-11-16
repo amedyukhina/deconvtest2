@@ -13,8 +13,8 @@ class Organize(Align):
                                        parameters=parameters,
                                        parent_name=parent_name)
         self.n_inputs = 2
-        self.n_outputs = 2
+        self.n_outputs = 1
         self.type_input = ['file', 'file']
-        self.type_output = ['folder', 'folder']
+        self.type_output = 'folder'
         self.align = True
         self.add_id = False
