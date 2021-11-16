@@ -35,7 +35,6 @@ class Step:
         self.methods = []  # the same as `method` but for the case of multiple methods (e.g. for evaluation)
         self.module = None
         self.input_step = None
-        self.input_vars = []
         self.valid_parameters = None
 
         self.available_modules = list_modules(available_steps, module_type=inspect.isclass)
@@ -184,7 +183,7 @@ class Step:
 
             elif type(parameters[param.name]) is str and \
                     parameters[param.name] == DEFAULT_PIPELINE_PARAM:
-                self.input_vars.append(param.name)
+                continue
             else:
                 if type(parameters[param.name]) in [list, np.ndarray]:
                     is_list = True
