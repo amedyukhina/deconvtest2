@@ -3,16 +3,16 @@ import inspect
 import itertools
 import json
 import os
-import warnings
 from time import sleep
 from typing import Union
 
 import numpy as np
 import pandas as pd
 from am_utils.parallel import run_parallel
-from skimage import io
 
 from .step import Step
+from ...core.utils import io
+from ...core.utils.constants import EXTENSIONS
 from ...core.utils.conversion import keys_to_list
 from ...core.utils.utils import list_modules
 from ...framework import module as available_steps
@@ -130,15 +130,6 @@ class Workflow:
         if self.workflow is None:
             self.get_workflow_graph()
         os.makedirs(self.output_path, exist_ok=True)
-        img_filename_pattern = os.path.join(self.output_path, '%s.tif')
-        stat_filename_pattern = os.path.join(self.output_path, '%s.csv')
-
-        # store filenames for the outputs
-        outputs = dict()
-        for item in self.workflow['items']:
-            steps = item['modules']
-            for step_kwargs in steps:
-                outputs[step_kwargs['outputID']] = img_filename_pattern % step_kwargs['outputID']
 
         # run the workflow in parallel
         run_parallel(
@@ -147,10 +138,9 @@ class Workflow:
             print_progress=verbose,
             items=self.workflow['items'],
             max_threads=njobs,
-            img_filename_pattern=img_filename_pattern,
-            stat_filename_pattern=stat_filename_pattern,
-            outputs=outputs
+            output_path=self.output_path
         )
+
         stats = pd.DataFrame()
         for fn in os.listdir(self.output_path):
             if fn.endswith('csv'):
@@ -172,12 +162,16 @@ class Workflow:
             module = dict(name=step.name, method=step.method)
             module = self.__add_params_to_module(step.parameters.iloc[i], module)
             module['outputID'] = module.pop('ID')
+            module['type_output'] = step.type_output
+            module['type_input'] = step.type_input
             item = dict(name=rf'item{i:02d}', modules=[module])
             block['items'].append(item)
 
         if len(step.parameters) == 0:
             module = dict(name=step.name, method=step.method)
             module['outputID'] = step.name + '0000'
+            module['type_output'] = step.type_output
+            module['type_input'] = step.type_input
             item = dict(name=rf'item00', modules=[module])
             block['items'].append(item)
         return block
@@ -237,13 +231,20 @@ class Workflow:
         return block
 
 
-def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
+def run_item(item, output_path):
     steps = item['modules']
     for step_kwargs in steps:
         name = step_kwargs.pop('name')
         method = step_kwargs.pop('method')
         outputID = step_kwargs.pop('outputID')
-        output_name = img_filename_pattern % outputID
+        type_output = step_kwargs.pop('type_output')
+        if 'type_input' in step_kwargs:
+            type_input = step_kwargs.pop('type_input')
+            if not type(type_input) is list:
+                type_input = [type_input]
+        else:
+            type_input = []
+        output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
 
         # if output exists, wait until file size stops increasing
         if os.path.exists(output_name):
@@ -257,29 +258,19 @@ def run_item(item, img_filename_pattern, stat_filename_pattern, outputs):
         else:
             if "inputIDs" in step_kwargs:
                 inputIDs = step_kwargs.pop('inputIDs')
-                inputs = [outputs[inputID] for inputID in inputIDs]
-                inputs = [io.imread(fn) for fn in inputs]
+                input_fns = [os.path.join(output_path, inputIDs[i] + EXTENSIONS[type_input[i]])
+                             for i in range(len(inputIDs))]
+                inputs = [io.read(input_fns[i], type_input[i]) for i in range(len(input_fns))]
             else:
                 inputs = []
 
             if name == 'Evaluation' and type(method) is list:
-                output = []
+                output = pd.DataFrame({'OutputID': [outputID]})
                 for m in method:
                     module = Step(name, m).module(method=m)
-                    output.append(module.run(*inputs, **step_kwargs))
+                    output[m] = module.run(*inputs, **step_kwargs)
             else:
                 module = Step(name, method).module(method=method)
                 output = module.run(*inputs, **step_kwargs)
 
-            if name == 'Evaluation':
-                stat = pd.DataFrame({'OutputID': [outputID]})
-                if type(method) is list:
-                    for m, o in zip(method, output):
-                        stat[m] = o
-                else:
-                    stat[method] = output
-                stat.to_csv(stat_filename_pattern % outputID, index=False)
-            else:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    io.imsave(output_name, output)
+            io.write(output_name, output, type_output)
