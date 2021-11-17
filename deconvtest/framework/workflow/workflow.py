@@ -266,6 +266,10 @@ def run_item(item, output_path):
             else:
                 inputs = []
 
+            if name == 'Organize':
+                step_kwargs['img_name'] = input_fns[0][len(output_path)+1:]
+                step_kwargs['output_dir'] = os.path.join(output_path, outputID[len(outputID.split('_')[0])+1:])
+
             if name == 'Evaluation' and type(method) is list:
                 output = pd.DataFrame({'OutputID': [outputID]})
                 for m in method:
