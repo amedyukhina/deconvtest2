@@ -58,6 +58,10 @@ class Workflow:
                     raise IndexError(rf"{st} is invalid value for step index; must be < {len(self.steps)}")
 
         step.input_step = input_step
+        if step.wait_complete:
+            previous_step = self.steps[input_step[0]]
+            limiting_step = self.steps[previous_step.input_step[0]]
+            step.parameters['min_inputs'] = len(limiting_step.parameters)
         self.steps.append(step)
 
     def to_dict(self):
@@ -110,6 +114,8 @@ class Workflow:
                 blocks.append(block)
         self.workflow = blocks[-1]
         self.workflow['name'] = 'workflow_graph'
+        self.__add_module_ids()
+
         if to_json:
             return json.dumps(self.workflow, indent=4)
         else:
@@ -161,7 +167,11 @@ class Workflow:
         for i in range(len(step.parameters)):
             module = dict(name=step.name, method=step.method)
             module = self.__add_params_to_module(step.parameters.iloc[i], module)
-            module['outputID'] = module.pop('ID')
+            if step.add_id:
+                module['outputID'] = module.pop('ID')
+            else:
+                module.pop('ID')
+                module['outputID'] = ''
             module['type_output'] = step.type_output
             module['type_input'] = step.type_input
             item = dict(name=rf'item{i:02d}', modules=[module])
@@ -169,7 +179,10 @@ class Workflow:
 
         if len(step.parameters) == 0:
             module = dict(name=step.name, method=step.method)
-            module['outputID'] = step.name + '0000'
+            if step.add_id:
+                module['outputID'] = step.name + '0000'
+            else:
+                module['outputID'] = ''
             module['type_output'] = step.type_output
             module['type_input'] = step.type_input
             item = dict(name=rf'item00', modules=[module])
@@ -216,10 +229,10 @@ class Workflow:
                     item['modules'].append(copy.deepcopy(st))
                 item['modules'].append(copy.deepcopy(items[2]['modules'][0]))
 
-                outputID = items[1]['modules'][-1]['outputID']
-                if step.add_id:
-                    outputID += '_' + items[2]['modules'][-1]['outputID']
+                outputID = items[1]['modules'][-1]['outputID'] + '_' + items[2]['modules'][-1]['outputID']
                 inputIDs = [items[0]['modules'][-1]['outputID'], items[1]['modules'][-1]['outputID']]
+                if step.name == 'Organize':
+                    outputID = outputID.replace(inputIDs[0], '')
                 combined_block = self.__add_ids(combined_block, i, item, inputIDs, outputID, step)
 
                 i += 1
@@ -229,8 +242,21 @@ class Workflow:
     def __add_ids(self, block, i, item, inputIDs, outputID, step):
         block['items'].append(item)
         block['items'][i]['modules'][-1]['inputIDs'] = inputIDs[:len(step.input_step)]
-        block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_')
+        block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_').strip('_')
         return block
+
+    def __add_module_ids(self):
+        # add unique module ids
+        items = []
+        for item in self.workflow['items']:
+            for module in item['modules']:
+                module_id = module['name'] + '_' + module['outputID']
+                if 'inputIDs' in module:
+                    module_id += '_' + '_'.join(module['inputIDs'])
+                module['module_id'] = module_id
+
+            items.append(item)
+        self.workflow['items'] = items
 
 
 def run_item(item, output_path):
@@ -248,16 +274,14 @@ def run_item(item, output_path):
             type_input = []
         output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
 
-        # if output exists, wait until file size stops increasing
-        if os.path.exists(output_name):
-            size1 = os.path.getsize(output_name)
-            sleep(0.1)
-            size2 = os.path.getsize(output_name)
-            while size2 > size1:
-                size1 = size2
-                sleep(0.1)
-                size2 = os.path.getsize(output_name)
+        lock_file = os.path.join(output_path, step_kwargs.pop('module_id') + '.lock')
+        if os.path.exists(lock_file) or \
+                (os.path.exists(output_name) and name != 'Organize'):  # check if the step is in process or completed
+            while os.path.exists(lock_file):  # wait if the step is in process
+                sleep(1)
         else:
+            with open(lock_file, 'w') as f:
+                pass
             if "inputIDs" in step_kwargs:
                 inputIDs = step_kwargs.pop('inputIDs')
                 input_fns = [os.path.join(output_path, inputIDs[i] + EXTENSIONS[type_input[i]])
@@ -265,10 +289,11 @@ def run_item(item, output_path):
                 inputs = [io.read(input_fns[i], type_input[i]) for i in range(len(input_fns))]
             else:
                 inputs = []
+                input_fns = []
 
             if name == 'Organize':
-                step_kwargs['img_name'] = input_fns[0][len(output_path)+1:]
-                step_kwargs['output_dir'] = os.path.join(output_path, outputID[len(outputID.split('_')[0])+1:])
+                step_kwargs['img_name'] = input_fns[0][len(output_path) + 1:]
+                step_kwargs['output_dir'] = os.path.join(output_path, outputID)
 
             if name == 'Evaluation' and type(method) is list:
                 output = pd.DataFrame({'OutputID': [outputID]})
@@ -279,4 +304,6 @@ def run_item(item, output_path):
                 module = Step(name, method).module(method=method)
                 output = module.run(*inputs, **step_kwargs)
 
+            # print(output_name)
             io.write(output_name, output, type_output)
+            os.remove(lock_file)
