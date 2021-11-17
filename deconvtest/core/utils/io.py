@@ -1,4 +1,5 @@
 import pandas as pd
+from csbdeep.io import save_training_data
 from skimage import io
 
 
@@ -26,6 +27,10 @@ def write_file(fn, output):
     return
 
 
+def write_data(fn, output):
+    save_training_data(fn, *output)
+
+
 READ_FN = dict(image=read_img,
                stat=read_stat,
                folder=read_file,
@@ -36,7 +41,7 @@ WRITE_FN = dict(image=write_img,
                 stat=write_stat,
                 folder=write_file,
                 file=write_file,
-                data=write_file)
+                data=write_data)
 
 
 def read(fn, type_input):
