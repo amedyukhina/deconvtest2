@@ -28,6 +28,7 @@ class Module:
         self.type_input = None
         self.type_output = None
         self.add_id = True
+        self.wait_complete = False
 
         if method is not None:
             self.import_method(method)
