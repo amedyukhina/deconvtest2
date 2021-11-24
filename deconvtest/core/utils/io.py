@@ -27,21 +27,19 @@ def write_file(fn, output):
     return
 
 
-def write_data(fn, output):
-    save_training_data(fn, *output)
-
-
 READ_FN = dict(image=read_img,
                stat=read_stat,
                folder=read_file,
                file=read_file,
-               data=read_file)
+               data=read_file,
+               model=read_file)
 
 WRITE_FN = dict(image=write_img,
                 stat=write_stat,
                 folder=write_file,
                 file=write_file,
-                data=write_data)
+                data=write_file,
+                model=write_file)
 
 
 def read(fn, type_input):
