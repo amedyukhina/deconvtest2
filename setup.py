@@ -36,7 +36,8 @@ setup(
         'scikit-image',
         'pandas',
         'am_utils',
-        'csbdeep'
+        'csbdeep',
+        'matplotlib'
     ],
     dependency_links=[
         "https://github.com/amedyukhina/am_utils/releases/",
