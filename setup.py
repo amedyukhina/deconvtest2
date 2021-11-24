@@ -13,6 +13,8 @@ setup(
               'deconvtest.methods.transforms',
               'deconvtest.methods.deconvolution',
               'deconvtest.methods.evaluation',
+              'deconvtest.methods.datagen',
+              'deconvtest.methods.training',
               'deconvtest.core',
               'deconvtest.core.shapes',
               'deconvtest.core.utils',
@@ -33,7 +35,8 @@ setup(
         'tqdm',
         'scikit-image',
         'pandas',
-        'am_utils'
+        'am_utils',
+        'csbdeep'
     ],
     dependency_links=[
         "https://github.com/amedyukhina/am_utils/releases/",
