@@ -7,25 +7,25 @@ from csbdeep.models import CARE
 from csbdeep.utils.tf import limit_gpu_memory
 
 
-def care_restore(img: np.ndarray, model_name: str, limit_gpu: float = 0.5, **kwargs):
+def care_restore(img: np.ndarray, model: str, limit_gpu: float = 0.5, axes: str = 'ZYX', **kwargs):
     """
 
     Parameters
     ----------
     img : numpy.ndarray
         Input image.
-    model_name : str
+    model : str
         Model name (full path).
     limit_gpu : float, optional
         Fraction of the GPU memory to use.
         Default: 0.5
+    axes : str
+        Axes of the input ``img``.
     kwargs : dict
         Configuration attributes (see below).
 
     Attributes
     ----------
-    axes : str
-        Axes of the input ``img``.
     normalizer : :class:`csbdeep.data.Normalizer` or None
         Normalization of input image before prediction and (potentially) transformation back after prediction.
     resizer : :class:`csbdeep.data.Resizer` or None
@@ -42,6 +42,6 @@ def care_restore(img: np.ndarray, model_name: str, limit_gpu: float = 0.5, **kwa
 
     """
     limit_gpu_memory(fraction=limit_gpu)
-    model = CARE(config=None, name=model_name.split('/')[-1], basedir=os.path.dirname(model_name))
-    restored = model.predict(img, **kwargs)
+    model = CARE(config=None, name=model.split('/')[-1], basedir=os.path.dirname(model))
+    restored = model.predict(img, axes=axes, **kwargs)
     return restored
