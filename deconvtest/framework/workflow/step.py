@@ -148,12 +148,13 @@ class Step:
 
         if mode == 'align':
             df_parameters = pd.DataFrame()
-            length = len(param_values_list[list(param_values_list.keys())[0]])
-            for key in param_values_list.keys():
-                if not len(param_values_list[key]) == length:
-                    raise ValueError(rf'{length}!={len(param_values_list[key])}. '
-                                     'Lengths of module_base lists for mode "align" must be equal!')
-                df_parameters[key] = param_values_list[key]
+            if len(param_values_list.keys()) > 0:
+                length = len(param_values_list[list(param_values_list.keys())[0]])
+                for key in param_values_list.keys():
+                    if not len(param_values_list[key]) == length:
+                        raise ValueError(rf'{length}!={len(param_values_list[key])}. '
+                                         'Lengths of module_base lists for mode "align" must be equal!')
+                    df_parameters[key] = param_values_list[key]
         else:
             values = np.array(list(itertools.product(*list(param_values_list.values()))))
             df_parameters = pd.DataFrame(values, columns=param_values_list.keys())
