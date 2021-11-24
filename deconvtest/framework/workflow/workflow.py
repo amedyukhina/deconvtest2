@@ -115,6 +115,7 @@ class Workflow:
         self.workflow = blocks[-1]
         self.workflow['name'] = 'workflow_graph'
         self.__add_module_ids()
+        self.__remove_repeating_steps()
 
         if to_json:
             return json.dumps(self.workflow, indent=4)
@@ -257,6 +258,17 @@ class Workflow:
 
             items.append(item)
         self.workflow['items'] = items
+
+    def __remove_repeating_steps(self):
+        for i in range(len(self.workflow['items'])):
+            module_ids = []
+            modules = []
+            for module in self.workflow['items'][i]['modules']:
+                if not module['module_id'] in module_ids:
+                    modules.append(module)
+                    module_ids.append(module['module_id'])
+
+            self.workflow['items'][i]['modules'] = modules
 
 
 def run_item(item, output_path, nsteps=None):
