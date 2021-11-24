@@ -3,4 +3,5 @@ EXTENSIONS = dict(image='.tif',
                   stat='.csv',
                   folder='',
                   file='',
-                  data='.npz')
+                  data='.npz',
+                  model='')
