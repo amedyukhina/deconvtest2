@@ -132,7 +132,7 @@ class Workflow:
             with open(path, 'w') as f:
                 json.dump(workflow, f)
 
-    def run(self, njobs=8, verbose=True):
+    def run(self, njobs=8, verbose=True, nsteps=None):
         if self.workflow is None:
             self.get_workflow_graph()
         os.makedirs(self.output_path, exist_ok=True)
@@ -144,7 +144,7 @@ class Workflow:
             print_progress=verbose,
             items=self.workflow['items'],
             max_threads=njobs,
-            output_path=self.output_path
+            **dict(output_path=self.output_path, nsteps=nsteps)
         )
 
         stats = pd.DataFrame()
@@ -259,8 +259,10 @@ class Workflow:
         self.workflow['items'] = items
 
 
-def run_item(item, output_path):
+def run_item(item, output_path, nsteps=None):
     steps = item['modules']
+    if nsteps is not None:
+        steps = steps[:nsteps]
     for step_kwargs in steps:
         name = step_kwargs.pop('name')
         method = step_kwargs.pop('method')
@@ -275,6 +277,8 @@ def run_item(item, output_path):
         output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
 
         lock_file = os.path.join(output_path, step_kwargs.pop('module_id') + '.lock')
+        np.random.seed()
+        sleep(np.random.rand())
         if os.path.exists(lock_file) or \
                 (os.path.exists(output_name) and name != 'Organize'):  # check if the step is in process or completed
             while os.path.exists(lock_file):  # wait if the step is in process
@@ -293,7 +297,9 @@ def run_item(item, output_path):
 
             if name == 'Organize':
                 step_kwargs['img_name'] = input_fns[0][len(output_path) + 1:]
-                step_kwargs['output_dir'] = os.path.join(output_path, outputID)
+
+            if io.WRITE_FN[type_output] == io.write_file:
+                step_kwargs['fn_output'] = os.path.join(output_path, outputID)
 
             if name == 'Evaluation' and type(method) is list:
                 output = pd.DataFrame({'OutputID': [outputID]})
