@@ -22,7 +22,7 @@ setup(
               'deconvtest.framework.module',
               'deconvtest.framework.workflow'
               ],
-    license='BSD-3-Clause',
+    license='Apache License 2.0',
     include_package_data=True,
 
     test_suite='deconvtest.tests',
