@@ -26,7 +26,8 @@ class TestEllipsoid(unittest.TestCase):
         [[5, 3, 2], 0.1, 0, 0],
     )
     def test_valid_inputs(self, variables):
-        ellipsoid(*variables)
+        img = ellipsoid(*variables)
+        self.assertGreater(img.max(), 0)
 
 
 if __name__ == '__main__':
