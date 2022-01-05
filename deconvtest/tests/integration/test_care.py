@@ -23,7 +23,7 @@ class TestWorkflow(unittest.TestCase):
         w.add_step(s)
 
         s = Step('Transform', 'poisson_noise')
-        s.specify_parameters(img='pipeline', snr=[2, 5], base_name='noise')
+        s.specify_parameters(img='pipeline', snr=[2, 5])
         path_noise = 'params_noise.csv'
         s.save_parameters(os.path.join(path, path_noise))
         w.add_step(s)
