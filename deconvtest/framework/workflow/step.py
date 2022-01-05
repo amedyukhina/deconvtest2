@@ -226,7 +226,10 @@ class Step:
 
     def __add_ids(self, df_parameters, base=None, pos=4, sep=''):
         if base is None:
-            base = self.name
+            if type(self.method) is str:
+                base = self.method
+            else:
+                base = self.name
         if df_parameters is not None:
             names = [rf"{base}{sep}" + str(i).zfill(pos) for i in range(len(df_parameters))]
             df_parameters['ID'] = names

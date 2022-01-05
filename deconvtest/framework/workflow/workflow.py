@@ -238,7 +238,11 @@ class Workflow:
         if len(step.parameters) == 0:
             module = dict(name=step.name, method=step.method)
             if step.add_id:
-                module['outputID'] = step.name + '0000'
+                if type(step.method) is str:
+                    stname = step.method
+                else:
+                    stname = step.name
+                module['outputID'] = stname + '0000'
             else:
                 module['outputID'] = ''
             module['type_output'] = step.type_output
