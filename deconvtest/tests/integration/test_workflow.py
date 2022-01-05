@@ -30,7 +30,7 @@ class TestWorkflow(unittest.TestCase):
         w.add_step(s)
 
         s = Step('Convolution', 'convolve')
-        s.specify_parameters(img='pipeline', psf='pipeline')
+        s.specify_parameters(img='pipeline', psf='pipeline', conv_mode='same')
         w.add_step(s, input_step=[0, 1])
 
         s = Step('Transform', 'poisson_noise')
