@@ -11,3 +11,12 @@ def generate_id_table(input_dir: str, output_file: str):
                           'Filename': files})
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     table.to_csv(output_file, index=False)
+
+
+def generate_id_table_with_folders(input_dir: str, output_file: str):
+    ids = [fn for fn in os.listdir(input_dir) if os.path.isdir(fn)]
+    files = [os.path.join(input_dir, fn) for fn in ids]
+    table = pd.DataFrame({'ID': ids,
+                          'Filename': files})
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    table.to_csv(output_file, index=False)
