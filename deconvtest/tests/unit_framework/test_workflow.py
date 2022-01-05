@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from ddt import ddt
+from skimage import io
 
 from ...framework.workflow.step import Step
 from ...framework.workflow.utils import generate_id_table
@@ -85,7 +86,7 @@ class TestWorkflow(unittest.TestCase):
         w.add_step(s)
 
         s = Step('Evaluation', method=['rmse', 'nrmse'])
-        s.specify_parameters(img1='pipeline', img2='pipeline')
+        s.specify_parameters(gt='pipeline', img='pipeline')
         w.add_step(s, input_step=[0, 1])
 
     def test_workflow(self):
@@ -107,6 +108,8 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(str(w.get_workflow_graph()), str(w2.get_workflow_graph()))
         w2.run(verbose=False)
         files = os.listdir(os.path.join(path, 'data'))
+        img = io.imread(os.path.join(path, 'data', files[0]))
+        self.assertGreater(img.max(), 0)
         shutil.rmtree(path)
         self.assertEqual(len(files), 2)
 
