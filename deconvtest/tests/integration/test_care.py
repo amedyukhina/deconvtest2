@@ -54,11 +54,11 @@ class TestWorkflow(unittest.TestCase):
 
         wpath = 'workflow.json'
         w.save(os.path.join(path, wpath))
-        # gr = w.get_workflow_graph()
-        # for item in gr['items']:
-        #     print('Item:', item, '\nSteps:\n')
-        #     for m in item['modules']:
-        #         print(m)
+        gr = w.get_workflow_graph()
+        for item in gr['items']:
+            print('Item:', item, '\nSteps:\n')
+            for m in item['modules']:
+                print(m)
 
         w.run(verbose=False, nsteps=4)
         w.run(verbose=False, njobs=1, nsteps=6)
