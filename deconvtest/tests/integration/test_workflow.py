@@ -57,7 +57,7 @@ class TestWorkflow(unittest.TestCase):
 
         s = Step('GroundTruth', 'ellipsoid')
         path_gt = 'params_ellipsoid.csv'
-        s.specify_parameters(size=[10], voxel_size=[[0.5, 0.5, 0.5]],
+        s.specify_parameters(size=[10], voxel_size=[1],
                              mode='align', base_name='GT')
         s.save_parameters(os.path.join(path, path_gt))
         w.add_step(s)
@@ -84,19 +84,28 @@ class TestWorkflow(unittest.TestCase):
                              train_epochs=1, train_steps_per_epoch=10, validation_split=0.5)
         w.add_step(s)
 
+        s = Step('Restoration', 'care_restore')
+        s.specify_parameters(img='pipeline', model='pipeline')
+        w.add_step(s, input_step=[1, 4])
+
+        s = Step('Evaluation', ['rmse', 'nrmse', 'ssim'])
+        s.specify_parameters(gt='pipeline', img='pipeline')
+        w.add_step(s, input_step=[0, 5])
+
         wpath = 'workflow.json'
         w.save(os.path.join(path, wpath))
         # gr = w.get_workflow_graph()
         # for item in gr['items']:
-        #     print(item)
-        # for m in item['modules']:
-        #     print(m)
+        #     print('Item:', item, '\nSteps:\n')
+        #     for m in item['modules']:
+        #         print(m)
 
         w.run(verbose=False, nsteps=4)
-        w.run(verbose=False, njobs=1)
+        w.run(verbose=False, njobs=1, nsteps=6)
+        w.run(verbose=False)
         files = os.listdir(os.path.join(path, 'data'))
         shutil.rmtree(path)
-        self.assertEqual(len(files), 9)
+        self.assertEqual(len(files), 17)
 
 
 if __name__ == '__main__':

@@ -115,7 +115,6 @@ class Workflow:
         self.workflow = blocks[-1]
         self.workflow['name'] = 'workflow_graph'
         self.__add_module_ids()
-        self.__remove_repeating_steps()
 
         if to_json:
             return json.dumps(self.workflow, indent=4)
@@ -140,7 +139,7 @@ class Workflow:
 
         # run the workflow in parallel
         run_parallel(
-            process=run_item,
+            process=self.__run_item,
             process_name='Running the workflow',
             print_progress=verbose,
             items=self.workflow['items'],
@@ -153,6 +152,64 @@ class Workflow:
             if fn.endswith('csv'):
                 stats = pd.concat([stats, pd.read_csv(os.path.join(self.output_path, fn))], ignore_index=True)
         stats.to_csv(os.path.join(self.output_path, '..', self.name + '.csv'), index=False)
+
+    def __run_item(self, item, output_path, nsteps=None):
+        steps = item['modules']
+        workflow_steps = [step.name for step in self.steps]
+        if nsteps is not None:
+            workflow_steps = workflow_steps[:nsteps]
+        steps = [step for step in steps if step['name'] in workflow_steps]
+        for step_kwargs in steps:
+            name = step_kwargs.pop('name')
+            method = step_kwargs.pop('method')
+            outputID = step_kwargs.pop('outputID')
+            type_output = step_kwargs.pop('type_output')
+            if 'type_input' in step_kwargs:
+                type_input = step_kwargs.pop('type_input')
+                if not type(type_input) is list:
+                    type_input = [type_input]
+            else:
+                type_input = []
+            output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
+
+            lock_file = os.path.join(output_path, step_kwargs.pop('module_id') + '.lock')
+            np.random.seed()
+            sleep(np.random.rand())
+            if os.path.exists(lock_file) or \
+                    (os.path.exists(
+                        output_name) and name != 'Organize'):  # check if the step is in process or completed
+                while os.path.exists(lock_file):  # wait if the step is in process
+                    sleep(1)
+            else:
+                with open(lock_file, 'w') as f:
+                    pass
+                if "inputIDs" in step_kwargs:
+                    inputIDs = step_kwargs.pop('inputIDs')
+                    input_fns = [os.path.join(output_path, inputIDs[i] + EXTENSIONS[type_input[i]])
+                                 for i in range(len(inputIDs))]
+                    inputs = [io.read(input_fns[i], type_input[i]) for i in range(len(input_fns))]
+                else:
+                    inputs = []
+                    input_fns = []
+
+                if name == 'Organize':
+                    step_kwargs['img_name'] = input_fns[0][len(output_path) + 1:]
+
+                if io.WRITE_FN[type_output] == io.write_file:
+                    step_kwargs['fn_output'] = os.path.join(output_path, outputID)
+
+                if name == 'Evaluation' and type(method) is list:
+                    output = pd.DataFrame({'OutputID': [outputID]})
+                    for m in method:
+                        module = Step(name, m).module(method=m)
+                        output[m] = module.run(*inputs, **step_kwargs)
+                else:
+                    module = Step(name, method).module(method=method)
+                    output = module.run(*inputs, **step_kwargs)
+
+                # print(output_name)
+                io.write(output_name, output, type_output)
+                os.remove(lock_file)
 
     def __add_params_to_module(self, params, module):
         params = dict(params)
@@ -269,59 +326,3 @@ class Workflow:
                     module_ids.append(module['module_id'])
 
             self.workflow['items'][i]['modules'] = modules
-
-
-def run_item(item, output_path, nsteps=None):
-    steps = item['modules']
-    if nsteps is not None:
-        steps = steps[:nsteps]
-    for step_kwargs in steps:
-        name = step_kwargs.pop('name')
-        method = step_kwargs.pop('method')
-        outputID = step_kwargs.pop('outputID')
-        type_output = step_kwargs.pop('type_output')
-        if 'type_input' in step_kwargs:
-            type_input = step_kwargs.pop('type_input')
-            if not type(type_input) is list:
-                type_input = [type_input]
-        else:
-            type_input = []
-        output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
-
-        lock_file = os.path.join(output_path, step_kwargs.pop('module_id') + '.lock')
-        np.random.seed()
-        sleep(np.random.rand())
-        if os.path.exists(lock_file) or \
-                (os.path.exists(output_name) and name != 'Organize'):  # check if the step is in process or completed
-            while os.path.exists(lock_file):  # wait if the step is in process
-                sleep(1)
-        else:
-            with open(lock_file, 'w') as f:
-                pass
-            if "inputIDs" in step_kwargs:
-                inputIDs = step_kwargs.pop('inputIDs')
-                input_fns = [os.path.join(output_path, inputIDs[i] + EXTENSIONS[type_input[i]])
-                             for i in range(len(inputIDs))]
-                inputs = [io.read(input_fns[i], type_input[i]) for i in range(len(input_fns))]
-            else:
-                inputs = []
-                input_fns = []
-
-            if name == 'Organize':
-                step_kwargs['img_name'] = input_fns[0][len(output_path) + 1:]
-
-            if io.WRITE_FN[type_output] == io.write_file:
-                step_kwargs['fn_output'] = os.path.join(output_path, outputID)
-
-            if name == 'Evaluation' and type(method) is list:
-                output = pd.DataFrame({'OutputID': [outputID]})
-                for m in method:
-                    module = Step(name, m).module(method=m)
-                    output[m] = module.run(*inputs, **step_kwargs)
-            else:
-                module = Step(name, method).module(method=method)
-                output = module.run(*inputs, **step_kwargs)
-
-            # print(output_name)
-            io.write(output_name, output, type_output)
-            os.remove(lock_file)
