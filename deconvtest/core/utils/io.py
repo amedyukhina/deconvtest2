@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from csbdeep.io import save_training_data
 from skimage import io
 
@@ -15,8 +16,8 @@ def read_file(fn):
     return fn
 
 
-def write_img(fn, output):
-    io.imsave(fn, output)
+def write_img(fn, output, dtype=np.uint16):
+    io.imsave(fn, output.astype(dtype))
 
 
 def write_stat(fn, output):
@@ -46,5 +47,5 @@ def read(fn, type_input):
     return READ_FN[type_input](fn)
 
 
-def write(fn, output, type_output):
-    WRITE_FN[type_output](fn, output)
+def write(fn, output, type_output, **kwargs):
+    WRITE_FN[type_output](fn, output, **kwargs)
