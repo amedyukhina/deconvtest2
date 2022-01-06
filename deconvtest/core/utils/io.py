@@ -1,6 +1,5 @@
-import pandas as pd
 import numpy as np
-from csbdeep.io import save_training_data
+import pandas as pd
 from skimage import io
 
 

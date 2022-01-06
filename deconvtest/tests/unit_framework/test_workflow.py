@@ -5,8 +5,8 @@ import unittest
 import numpy as np
 import pandas as pd
 from ddt import ddt
-from skimage import io
 
+from ...core.utils.constants import *
 from ...framework.workflow.step import Step
 from ...framework.workflow.utils import generate_id_table
 from ...framework.workflow.workflow import Workflow
@@ -27,9 +27,7 @@ class TestWorkflow(unittest.TestCase):
 
     def test_export_import(self):
         s = Step('PSF', 'gaussian')
-        path_param1 = 'params1.csv'
         s.specify_parameters(sigma=[1, 2, 3], aspect=[3, 2, 4], mode='align')
-        s.save_parameters(path_param1)
         w = Workflow()
         w.add_step(s)
 
@@ -40,7 +38,8 @@ class TestWorkflow(unittest.TestCase):
         w2.load(path)
         self.assertTrue(os.path.exists(path))
         os.remove(path)
-        os.remove(path_param1)
+        shutil.rmtree(w2.path)
+        self.assertEqual(str(w), str(w2))
 
     def test_missing_method(self):
         w = Workflow()
@@ -89,45 +88,19 @@ class TestWorkflow(unittest.TestCase):
         s.specify_parameters(gt='pipeline', img='pipeline')
         w.add_step(s, input_step=[0, 1])
 
-    def test_workflow(self):
-        path = 'test_workflow'
-        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
-
-        s = Step('GroundTruth', 'ellipsoid')
-        path_gt = 'params_ellipsoid.csv'
-        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]], mode='align', base_name='GT')
-        s.save_parameters(os.path.join(path, path_gt))
-        w.add_step(s)
-
-        wpath = 'workflow.json'
-        w.save(os.path.join(path, wpath))
-        w2 = Workflow()
-        w2.load(os.path.join(path, wpath))
-        path_graph = 'workflow_graph.json'
-        w2.save_workflow_graph(os.path.join(path, path_graph))
-        self.assertEqual(str(w.get_workflow_graph()), str(w2.get_workflow_graph()))
-        w2.run(verbose=False)
-        files = os.listdir(os.path.join(path, 'data'))
-        img = io.imread(os.path.join(path, 'data', files[0]))
-        self.assertGreater(img.max(), 0)
-        shutil.rmtree(path)
-        self.assertEqual(len(files), 2)
-
     def test_id_table(self):
-        path = 'test_workflow'
-        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
+        w = Workflow()
 
         s = Step('GroundTruth', 'ellipsoid')
-        path_gt = 'params_ellipsoid.csv'
         s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
                              theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='permute', base_name='GT')
-        s.save_parameters(os.path.join(path, path_gt))
         w.add_step(s)
         w.run(verbose=False)
-        generate_id_table(os.path.join(path, 'data'), os.path.join(path, 'id_table.csv'))
-        ids = pd.read_csv(os.path.join(path, 'id_table.csv'))
+
+        generate_id_table(os.path.join(w.path, DATA_FOLDER_NAME), os.path.join(w.path, 'id_table.csv'))
+        ids = pd.read_csv(os.path.join(w.path, 'id_table.csv'))
         self.assertEqual(len(ids), 8)
-        shutil.rmtree(path)
+        shutil.rmtree(w.path)
 
 
 if __name__ == '__main__':

@@ -1,15 +1,14 @@
 import os
-import shutil
 import unittest
 
-from ddt import ddt
-from skimage import io
 import numpy as np
 from am_utils.utils import imsave
+from ddt import ddt
+from skimage import io
 
 from ...framework.workflow.step import Step
-from ...framework.workflow.workflow import Workflow
 from ...framework.workflow.utils import generate_id_table
+from ...framework.workflow.workflow import Workflow
 from ...methods.transforms.poisson_noise import poisson_noise
 
 
@@ -18,7 +17,7 @@ class TestWorkflow(unittest.TestCase):
 
     def test_care_workflow(self):
         path = 'test_workflow_care'
-        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data/gt'))
+        w = Workflow(name='test workflow', path=os.path.join(path, 'data/gt'))
 
         s = Step('GroundTruth', 'ellipsoid')
         s.specify_parameters(size=[10, 12], voxel_size=[1],

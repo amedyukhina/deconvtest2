@@ -4,6 +4,7 @@ import unittest
 
 from ddt import ddt
 
+from ...core.utils.constants import *
 from ...framework.workflow.step import Step
 from ...framework.workflow.workflow import Workflow
 
@@ -12,20 +13,15 @@ from ...framework.workflow.workflow import Workflow
 class TestWorkflow(unittest.TestCase):
 
     def test_care_workflow(self):
-        path = 'test_workflow'
-        w = Workflow(name='test workflow', output_path=os.path.join(path, 'data'))
+        w = Workflow(name='test workflow')
 
         s = Step('GroundTruth', 'ellipsoid')
-        path_gt = 'params_ellipsoid.csv'
         s.specify_parameters(size=[10], voxel_size=[1],
                              mode='align', base_name='GT')
-        s.save_parameters(os.path.join(path, path_gt))
         w.add_step(s)
 
         s = Step('Transform', 'poisson_noise')
         s.specify_parameters(img='pipeline', snr=[2, 5])
-        path_noise = 'params_noise.csv'
-        s.save_parameters(os.path.join(path, path_noise))
         w.add_step(s)
 
         s = Step('Organize', 'care_prep')
@@ -35,8 +31,6 @@ class TestWorkflow(unittest.TestCase):
         s = Step('DataGen', 'care_datagen')
         s.specify_parameters(base_dir='pipeline', patch_size=[[4, 4, 4]],
                              n_patches_per_image=[5], verbose=False)
-        path_datagen = 'params_datagen.csv'
-        s.save_parameters(os.path.join(path, path_datagen))
         w.add_step(s)
 
         s = Step('Training', 'care_train')
@@ -52,8 +46,7 @@ class TestWorkflow(unittest.TestCase):
         s.specify_parameters(gt='pipeline', img='pipeline')
         w.add_step(s, input_step=[0, 5])
 
-        wpath = 'workflow.json'
-        w.save(os.path.join(path, wpath))
+        w.save()
         gr = w.get_workflow_graph()
         for item in gr['items']:
             print('Item:', item, '\nSteps:\n')
@@ -63,8 +56,8 @@ class TestWorkflow(unittest.TestCase):
         w.run(verbose=False, nsteps=4)
         w.run(verbose=False, njobs=1, nsteps=6)
         w.run(verbose=False)
-        files = os.listdir(os.path.join(path, 'data'))
-        shutil.rmtree(path)
+        files = os.listdir(os.path.join(w.path, DATA_FOLDER_NAME))
+        shutil.rmtree(w.path)
         self.assertEqual(len(files), 17)
 
 

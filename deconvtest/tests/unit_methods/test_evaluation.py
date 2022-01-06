@@ -5,8 +5,8 @@ from ddt import ddt, data
 from skimage.metrics import normalized_root_mse, structural_similarity, peak_signal_noise_ratio
 
 from ...methods.evaluation.nrmse import nrmse
-from ...methods.evaluation.rmse import rmse
 from ...methods.evaluation.psnr import psnr
+from ...methods.evaluation.rmse import rmse
 from ...methods.evaluation.ssim import ssim
 
 

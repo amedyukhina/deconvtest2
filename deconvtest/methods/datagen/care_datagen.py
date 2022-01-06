@@ -21,4 +21,3 @@ def care_datagen(base_dir: str, n_patches_per_image: int, name_high: str = 'high
 
     create_patches(raw_data, n_patches_per_image=n_patches_per_image,
                    patch_size=patch_size, verbose=verbose, save_file=fn_output)
-

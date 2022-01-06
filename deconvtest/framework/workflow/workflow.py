@@ -3,6 +3,7 @@ import inspect
 import itertools
 import json
 import os
+import time
 from time import sleep
 from typing import Union
 
@@ -12,7 +13,7 @@ from am_utils.parallel import run_parallel
 
 from .step import Step
 from ...core.utils import io
-from ...core.utils.constants import EXTENSIONS
+from ...core.utils.constants import *
 from ...core.utils.conversion import keys_to_list
 from ...core.utils.utils import list_modules
 from ...framework import module as available_steps
@@ -30,15 +31,18 @@ class Workflow:
     Workflow class
     """
 
-    def __init__(self, name: str = 'New Workflow', output_path: str = None):
+    def __init__(self, name: str = None, path: str = None):
+        if name is None:
+            name = rf"{DEFAULT_WORKFLOW_NAME}_{int(time.time())}"
         self.name = name
         self.available_steps = list_available_steps()
         self.steps = []
-        self.filename = None
-        self.workflow = None
-        self.output_path = name.replace(' ', '_')
-        if output_path is not None:
-            self.output_path = output_path
+        self.workflow_graph = None
+        if path is not None:
+            self.path = path
+        else:
+            self.path = self.name.replace(' ', '_')
+        self.path = os.path.abspath(self.path)
 
     def add_step(self, step: Step, input_step: Union[int, list] = None):
         if step.method is None and len(step.methods) == 0:
@@ -67,32 +71,30 @@ class Workflow:
     def to_dict(self):
         workflow = dict()
         workflow['name'] = self.name
-        workflow['filename'] = self.filename
-        workflow['output path'] = self.output_path
+        workflow['path'] = self.path
         workflow['steps'] = [step.to_dict() for step in self.steps]
         return workflow
 
     def __repr__(self):
         return json.dumps(self.to_dict(), indent=4)
 
-    def save(self, filename: str = None):
-        if filename is not None:
-            self.filename = filename
+    def save(self, path=None):
+        if path is None:
+            path = os.path.join(self.path, WORKFLOW_FN)
+        for i, step in enumerate(self.steps):
+            step.save_parameters(os.path.join(self.path,
+                                              PARAMETER_FOLDER_NAME,
+                                              rf"{i:02d}_{step.name}_{step.method}.csv"))
 
-        if self.filename is None:
-            raise ValueError('Path must be provided!')
-        else:
-            if not os.path.exists(os.path.dirname(filename)) and os.path.dirname(filename) != '':
-                os.makedirs(os.path.dirname(filename))
-            with open(filename, 'w') as f:
-                json.dump(self.to_dict(), f)
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(path, 'w') as f:
+            json.dump(self.to_dict(), f)
 
     def load(self, filename: str):
         with open(filename) as f:
             workflow = json.load(f)
         self.name = workflow['name']
-        self.filename = filename
-        self.output_path = workflow['output path']
+        self.path = workflow['path']
         self.steps = []
         for step in workflow['steps']:
             s = Step(step['name'])
@@ -112,46 +114,45 @@ class Workflow:
                     blocks = self.__permute_items(step, block, blocks)
             else:
                 blocks.append(block)
-        self.workflow = blocks[-1]
-        self.workflow['name'] = 'workflow_graph'
+        self.workflow_graph = blocks[-1]
+        self.workflow_graph['name'] = 'workflow_graph'
         self.__add_module_ids()
 
         if to_json:
-            return json.dumps(self.workflow, indent=4)
+            return json.dumps(self.workflow_graph, indent=4)
         else:
-            return self.workflow
+            return self.workflow_graph
 
-    def save_workflow_graph(self, path):
-        if path is not None:
-            self.path = path
-
-        if self.path is None:
-            raise ValueError('Path must be provided!')
-        else:
-            workflow = self.get_workflow_graph()
-            with open(path, 'w') as f:
-                json.dump(workflow, f)
+    def save_workflow_graph(self, path=None):
+        if path is None:
+            path = os.path.join(self.path, WORKFLOW_GRAPH_FN)
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        workflow = self.get_workflow_graph()
+        with open(path, 'w') as f:
+            json.dump(workflow, f)
 
     def run(self, njobs=8, verbose=True, nsteps=None):
-        if self.workflow is None:
+        if self.workflow_graph is None:
             self.get_workflow_graph()
-        os.makedirs(self.output_path, exist_ok=True)
+        self.save_workflow_graph()
+        output_path = os.path.join(self.path, DATA_FOLDER_NAME)
+        os.makedirs(output_path, exist_ok=True)
 
         # run the workflow in parallel
         run_parallel(
             process=self.__run_item,
             process_name='Running the workflow',
             print_progress=verbose,
-            items=self.workflow['items'],
+            items=self.workflow_graph['items'],
             max_threads=njobs,
-            **dict(output_path=self.output_path, nsteps=nsteps)
+            **dict(output_path=output_path, nsteps=nsteps)
         )
 
         stats = pd.DataFrame()
-        for fn in os.listdir(self.output_path):
+        for fn in os.listdir(output_path):
             if fn.endswith('csv'):
-                stats = pd.concat([stats, pd.read_csv(os.path.join(self.output_path, fn))], ignore_index=True)
-        stats.to_csv(os.path.join(self.output_path, '..', self.name + '.csv'), index=False)
+                stats = pd.concat([stats, pd.read_csv(os.path.join(output_path, fn))], ignore_index=True)
+        stats.to_csv(os.path.join(self.path, self.name + '_results.csv'), index=False)
 
     def __run_item(self, item, output_path, nsteps=None):
         steps = item['modules']
@@ -216,7 +217,10 @@ class Workflow:
         params = keys_to_list(params)
         for key in params.keys():
             try:
-                module[key] = params[key].item()
+                if type(params[key]) in [list, np.array]:
+                    module[key] = [k.item() for k in params[key]]
+                else:
+                    module[key] = params[key].item()
             except AttributeError:
                 module[key] = params[key]
         return module
@@ -310,7 +314,7 @@ class Workflow:
     def __add_module_ids(self):
         # add unique module ids
         items = []
-        for item in self.workflow['items']:
+        for item in self.workflow_graph['items']:
             for module in item['modules']:
                 module_id = module['name'] + '_' + module['outputID']
                 if 'inputIDs' in module:
@@ -318,15 +322,15 @@ class Workflow:
                 module['module_id'] = module_id
 
             items.append(item)
-        self.workflow['items'] = items
+        self.workflow_graph['items'] = items
 
     def __remove_repeating_steps(self):
-        for i in range(len(self.workflow['items'])):
+        for i in range(len(self.workflow_graph['items'])):
             module_ids = []
             modules = []
-            for module in self.workflow['items'][i]['modules']:
+            for module in self.workflow_graph['items'][i]['modules']:
                 if not module['module_id'] in module_ids:
                     modules.append(module)
                     module_ids.append(module['module_id'])
 
-            self.workflow['items'][i]['modules'] = modules
+            self.workflow_graph['items'][i]['modules'] = modules

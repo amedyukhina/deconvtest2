@@ -8,7 +8,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from ...core.utils.constants import DEFAULT_PIPELINE_PARAM
+from ...core.utils.constants import *
 from ...core.utils.conversion import list_to_keys, list_to_columns
 from ...core.utils.errors import raise_mandatary_param_error, raise_not_valid_type_pipeline_error
 from ...core.utils.errors import raise_not_valid_step_error, raise_not_valid_method_error
@@ -24,8 +24,8 @@ class Step:
 
     def __init__(self, step_name: str, method: Union[str, list] = None):
         self.name = step_name
-        self.parameters = pd.DataFrame()
         self.path = None
+        self.parameters = pd.DataFrame()
         self.n_inputs = None
         self.n_outputs = None
         self.type_input = None
@@ -235,16 +235,10 @@ class Step:
             df_parameters['ID'] = names
         return df_parameters
 
-    def save_parameters(self, path: str = None):
-        if path is not None:
-            self.path = path
-
-        if self.path is None:
-            raise ValueError('Path must be provided!')
-        else:
-            if not os.path.exists(os.path.dirname(path)) and os.path.dirname(path) != '':
-                os.makedirs(os.path.dirname(path))
-            self.parameters.to_csv(path, index=False)
+    def save_parameters(self, path):
+        self.path = path
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        self.parameters.to_csv(path, index=False)
 
     def load_parameters(self, path: str):
         self.parameters = pd.read_csv(path)
