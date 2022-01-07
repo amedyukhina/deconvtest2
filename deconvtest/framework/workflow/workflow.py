@@ -4,6 +4,7 @@ import itertools
 import json
 import os
 import time
+import warnings
 from time import sleep
 from typing import Union
 
@@ -44,10 +45,22 @@ class Workflow:
             self.path = self.name.replace(' ', '_')
         self.path = os.path.abspath(self.path)
 
-    def add_step(self, step: Step, input_step: Union[int, list] = None):
+    def add_step(self, step_name: str, method: Union[str, list] = None,
+                 input_step: Union[int, list] = None, parmeter_mode: str = 'permute',
+                 **parameters):
+        step = Step(step_name, method)
         if step.method is None and len(step.methods) == 0:
             raise ValueError(rf"Step {step.name} does not have a method. "
                              "First specify the method by `step.add_method(method)`")
+        if step.n_inputs > len(self.steps):
+            raise IndexError(rf"Not enough previous steps in the workflow for step {step.name}."
+                             rf"{len(self.steps)} were added; {step.n_inputs} are required.")
+        if len(parameters.keys()) > 0:
+            step.specify_parameters(mode=parmeter_mode, base_name=rf"{len(self.steps):02d}_", **parameters)
+        else:
+            step.parameters = pd.DataFrame()
+            warnings.warn(rf'No parameters were defined for this step! Adding empty list')
+
         if step.n_inputs > len(self.steps):
             raise IndexError(rf"Not enough previous steps in the workflow for step {step.name}."
                              rf"{len(self.steps)} were added; {step.n_inputs} are required.")
@@ -115,8 +128,8 @@ class Workflow:
             else:
                 blocks.append(block)
         self.workflow_graph = blocks[-1]
-        self.workflow_graph['name'] = 'workflow_graph'
-        self.__add_module_ids()
+        self.workflow_graph['name'] = self.name
+        # self.__add_module_ids()
 
         if to_json:
             return json.dumps(self.workflow_graph, indent=4)
@@ -155,25 +168,30 @@ class Workflow:
         stats.to_csv(os.path.join(self.path, self.name + '_results.csv'), index=False)
 
     def __run_item(self, item, output_path, nsteps=None):
-        steps = item['modules']
+        steps = item['item_steps']
         workflow_steps = [step.name for step in self.steps]
         if nsteps is not None:
             workflow_steps = workflow_steps[:nsteps]
         steps = [step for step in steps if step['name'] in workflow_steps]
         for step_kwargs in steps:
+            step = self.steps[int(step_kwargs['ID'].split('_')[0])]
             name = step_kwargs.pop('name')
             method = step_kwargs.pop('method')
+            parameters = step.parameters
+            step_kwargs = self.__add_params_to_module(parameters[parameters['ID'] == step_kwargs['ID']].iloc[0],
+                                                      step_kwargs)
+            step_kwargs.pop('ID')
             outputID = step_kwargs.pop('outputID')
-            type_output = step_kwargs.pop('type_output')
-            if 'type_input' in step_kwargs:
-                type_input = step_kwargs.pop('type_input')
-                if not type(type_input) is list:
-                    type_input = [type_input]
-            else:
-                type_input = []
+            type_output = step.type_output
+            type_input = step.type_input
+            if not type(type_input) is list:
+                type_input = [type_input]
             output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
 
-            lock_file = os.path.join(output_path, step_kwargs.pop('module_id') + '.lock')
+            lock_file = outputID
+            if 'inputIDs' in step_kwargs:
+                lock_file = '_'.join(step_kwargs['inputIDs']) + '_' + lock_file
+            lock_file = os.path.join(output_path, lock_file + '.lock')
             np.random.seed()
             sleep(np.random.rand())
             if os.path.exists(lock_file) or \
@@ -208,7 +226,6 @@ class Workflow:
                     module = Step(name, method).module(method=method)
                     output = module.run(*inputs, **step_kwargs)
 
-                # print(output_name)
                 io.write(output_name, output, type_output)
                 os.remove(lock_file)
 
@@ -228,87 +245,76 @@ class Workflow:
     def __add_items_to_block(self, step, block):
         for i in range(len(step.parameters)):
             module = dict(name=step.name, method=step.method)
-            module = self.__add_params_to_module(step.parameters.iloc[i], module)
-            if step.add_id:
-                module['outputID'] = module.pop('ID')
-            else:
-                module.pop('ID')
-                module['outputID'] = ''
-            module['type_output'] = step.type_output
-            module['type_input'] = step.type_input
-            item = dict(name=rf'item{i:02d}', modules=[module])
+            module['ID'] = module['outputID'] = step.parameters.iloc[i]['ID']
+
+            item = dict(name=rf'item{i:02d}', item_steps=[module])
             block['items'].append(item)
 
         if len(step.parameters) == 0:
             module = dict(name=step.name, method=step.method)
-            if step.add_id:
-                if type(step.method) is str:
-                    stname = step.method
-                else:
-                    stname = step.name
-                module['outputID'] = stname + '0000'
-            else:
-                module['outputID'] = ''
-            module['type_output'] = step.type_output
-            module['type_input'] = step.type_input
-            item = dict(name=rf'item00', modules=[module])
+            item = dict(name=rf'item00', item_steps=[module])
             block['items'].append(item)
         return block
 
-    def __permute_items(self, step, new_block, blocks):
+    def __gen_lists(self, step, blocks, new_block):
         lists = []
         for input_step in step.input_step:
             lists.append(blocks[input_step]['items'])
         if len(new_block['items']) > 0:
             lists.append(new_block['items'])
+        return lists
+
+    def __permute_items(self, step, new_block, blocks):
+        lists = self.__gen_lists(step, blocks, new_block)
 
         combined_block = dict(name=rf'updated_block{len(blocks):02d}')
         combined_block['items'] = []
         for i, items in enumerate(itertools.product(*lists)):
             item = dict(name=rf'item{i:03d}')
-            item['modules'] = []
-            outputID = ''
+            item['item_steps'] = []
             inputIDs = []
+            outputID = rf"{items[-1]['item_steps'][-1]['outputID'].split('_')[0]}_"  # the step number
             for iter_item in items:
-                for st in iter_item['modules']:
-                    item['modules'].append(copy.deepcopy(st))
-                outputID = outputID + iter_item['modules'][-1]['outputID'] + '_'
-                inputIDs.append(iter_item['modules'][-1]['outputID'])
-            combined_block = self.__add_ids(combined_block, i, item, inputIDs, outputID, step)
+                for st in iter_item['item_steps']:
+                    item['item_steps'].append(copy.deepcopy(st))
+                outputID = outputID + iter_item['item_steps'][-1]['outputID'].split('_')[-1]
+                inputIDs.append(iter_item['item_steps'][-1]['outputID'])
+            # outputID = '_'.join(inputIDs)
+            combined_block = self.__add_ids(combined_block, item,
+                                            inputIDs[:len(step.input_step)], outputID)
         blocks.append(combined_block)
         return blocks
 
     def __align_items(self, step, new_block, blocks):
-        lists = []
-        for input_step in step.input_step:
-            lists.append(blocks[input_step]['items'])
-        if len(new_block['items']) > 0:
-            lists.append(new_block['items'])
+        lists = self.__gen_lists(step, blocks, new_block)
         i = 0
         combined_block = dict(name=rf'updated_block{len(blocks):02d}')
         combined_block['items'] = []
         for items in itertools.product(*lists):
-            if items[0]['modules'][0]['outputID'] == items[1]['modules'][0]['outputID']:
+            if items[0]['item_steps'][0]['ID'] == items[1]['item_steps'][0]['ID']:
                 item = dict(name=rf'item{i:03d}')
-                item['modules'] = []
-                for st in items[1]['modules']:
-                    item['modules'].append(copy.deepcopy(st))
-                item['modules'].append(copy.deepcopy(items[2]['modules'][0]))
+                item['item_steps'] = []
+                for st in items[1]['item_steps']:
+                    item['item_steps'].append(copy.deepcopy(st))
+                item['item_steps'].append(copy.deepcopy(items[2]['item_steps'][0]))
 
-                outputID = items[1]['modules'][-1]['outputID'] + '_' + items[2]['modules'][-1]['outputID']
-                inputIDs = [items[0]['modules'][-1]['outputID'], items[1]['modules'][-1]['outputID']]
+                outputID = items[2]['item_steps'][-1]['outputID'].split('_')[0] + '_' + \
+                           items[1]['item_steps'][-1]['outputID'].split('_')[-1] + \
+                           items[2]['item_steps'][-1]['outputID'].split('_')[-1]
+                inputIDs = [items[0]['item_steps'][-1]['outputID'],
+                            items[1]['item_steps'][-1]['outputID']]
                 if step.name == 'Organize':
                     outputID = outputID.replace(inputIDs[0], '')
-                combined_block = self.__add_ids(combined_block, i, item, inputIDs, outputID, step)
+                combined_block = self.__add_ids(combined_block, item, inputIDs, outputID)
 
                 i += 1
         blocks.append(combined_block)
         return blocks
 
-    def __add_ids(self, block, i, item, inputIDs, outputID, step):
+    def __add_ids(self, block, item, inputIDs, outputID):
         block['items'].append(item)
-        block['items'][i]['modules'][-1]['inputIDs'] = inputIDs[:len(step.input_step)]
-        block['items'][i]['modules'][-1]['outputID'] = outputID.rstrip('_').strip('_')
+        block['items'][-1]['item_steps'][-1]['inputIDs'] = inputIDs
+        block['items'][-1]['item_steps'][-1]['outputID'] = outputID.rstrip('_').strip('_')
         return block
 
     def __add_module_ids(self):

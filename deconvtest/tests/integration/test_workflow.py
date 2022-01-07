@@ -6,7 +6,6 @@ import numpy as np
 from ddt import ddt
 
 from ...core.utils.constants import *
-from ...framework.workflow.step import Step
 from ...framework.workflow.workflow import Workflow
 
 
@@ -17,28 +16,14 @@ class TestWorkflow(unittest.TestCase):
         path = 'test_workflow'
         w = Workflow(name='test workflow', path=path)
 
-        s = Step('GroundTruth', 'ellipsoid')
-        s.specify_parameters(size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
-                             theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3], mode='align', base_name='GT')
-        w.add_step(s)
+        w.add_step('GroundTruth', 'ellipsoid', parmeter_mode='align',
+                   size=[[10, 6, 6], 10], voxel_size=[[0.5, 0.2, 0.2]],
+                   theta=[0, np.pi / 2], phi=[np.pi, np.pi * 4 / 3])
+        w.add_step('PSF', 'gaussian', parmeter_mode='align', sigma=[1, 2], aspect=[2, 4])
+        w.add_step('Convolution', 'convolve', input_step=[0, 1], img='pipeline', psf='pipeline', conv_mode='same')
+        w.add_step('Transform', 'poisson_noise', img='pipeline', snr=[2, 5])
+        w.add_step('Evaluation', ['rmse', 'nrmse'], input_step=[0, 3], gt='pipeline', img='pipeline')
 
-        s = Step('PSF', 'gaussian')
-        s.specify_parameters(sigma=[1, 2], aspect=[2, 4], mode='align')
-        w.add_step(s)
-
-        s = Step('Convolution', 'convolve')
-        s.specify_parameters(img='pipeline', psf='pipeline', conv_mode='same')
-        w.add_step(s, input_step=[0, 1])
-
-        s = Step('Transform', 'poisson_noise')
-        s.specify_parameters(img='pipeline', snr=[2, 5], base_name='noise')
-        w.add_step(s)
-
-        s = Step('Evaluation', ['rmse', 'nrmse'])
-        s.specify_parameters(gt='pipeline', img='pipeline')
-        w.add_step(s, input_step=[0, 3])
-
-        w.save()
         w.run(verbose=False)
         files = os.listdir(os.path.join(path, DATA_FOLDER_NAME))
         shutil.rmtree(path)

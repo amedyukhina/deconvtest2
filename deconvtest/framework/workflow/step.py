@@ -231,11 +231,12 @@ class Step:
             else:
                 base = self.name
         if df_parameters is not None:
-            names = [rf"{base}{sep}" + str(i).zfill(pos) for i in range(len(df_parameters))]
+            names = [rf"{base}{sep}" + str(i).zfill(pos) for i in range(max(len(df_parameters), 1))]
             df_parameters['ID'] = names
         return df_parameters
 
     def save_parameters(self, path):
+        path = os.path.abspath(path)
         self.path = path
         os.makedirs(os.path.dirname(path), exist_ok=True)
         self.parameters.to_csv(path, index=False)
