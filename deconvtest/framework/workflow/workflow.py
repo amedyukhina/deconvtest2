@@ -296,7 +296,9 @@ class Workflow:
         combined_block = dict(name=rf'updated_block{len(blocks):02d}')
         combined_block['items'] = []
         for items in itertools.product(*lists):
-            if items[0]['item_steps'][0]['ID'] == items[1]['item_steps'][0]['ID']:
+            item_ids = [items[i]['item_steps'][0]['outputID'] for i in range(2)]
+            item_ids = [itid[len(itid.split('_')[0]) + 1 :] for itid in item_ids]
+            if item_ids[0] == item_ids[1]:
                 item = dict(name=rf'item{i:03d}')
                 item['item_steps'] = []
                 for st in items[1]['item_steps']:
@@ -309,7 +311,7 @@ class Workflow:
                 inputIDs = [items[0]['item_steps'][-1]['outputID'],
                             items[1]['item_steps'][-1]['outputID']]
                 if step.name == 'Organize':
-                    outputID = outputID.replace(inputIDs[0], '')
+                    outputID = outputID.replace('_' + inputIDs[0].split('_')[1], '_')
                 combined_block = self.__add_ids(combined_block, item, inputIDs, outputID)
 
                 i += 1
