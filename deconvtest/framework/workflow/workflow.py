@@ -56,7 +56,13 @@ class Workflow:
             raise IndexError(rf"Not enough previous steps in the workflow for step {step.name}."
                              rf"{len(self.steps)} were added; {step.n_inputs} are required.")
         if len(parameters.keys()) > 0:
-            step.specify_parameters(mode=parmeter_mode, base_name=rf"{len(self.steps):02d}_", **parameters)
+            if step.run_early:
+                module = step.module(method=step.method)
+                step.parameters = module.run(**parameters,
+                                             output_dir=os.path.join(self.path, DATA_FOLDER_NAME),
+                                             base_name=rf"{len(self.steps):02d}_")
+            else:
+                step.specify_parameters(mode=parmeter_mode, base_name=rf"{len(self.steps):02d}_", **parameters)
         else:
             step.parameters = pd.DataFrame()
             warnings.warn(rf'No parameters were defined for this step! Adding empty list')
@@ -129,7 +135,6 @@ class Workflow:
                 blocks.append(block)
         self.workflow_graph = blocks[-1]
         self.workflow_graph['name'] = self.name
-        # self.__add_module_ids()
 
         if to_json:
             return json.dumps(self.workflow_graph, indent=4)

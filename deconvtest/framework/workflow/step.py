@@ -38,6 +38,7 @@ class Step:
         self.valid_parameters = None
         self.add_id = True
         self.wait_complete = False
+        self.run_early = False
 
         self.available_modules = list_modules(available_steps, module_type=inspect.isclass)
         self.set_module()
@@ -59,6 +60,7 @@ class Step:
                 self.align = av_module[0]().align
                 self.add_id = av_module[0]().add_id
                 self.wait_complete = av_module[0]().wait_complete
+                self.run_early = av_module[0]().run_early
         if self.module is None:
             raise_not_valid_step_error(self.name, self.available_modules)
 
