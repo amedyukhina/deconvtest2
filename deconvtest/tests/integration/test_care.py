@@ -14,7 +14,7 @@ class TestWorkflow(unittest.TestCase):
     def test_care_workflow(self):
         w = Workflow(name='test workflow')
         w.add_step('GroundTruth', 'ellipsoid',
-                   size=[10], voxel_size=[1],
+                   size=[10, 11], voxel_size=[1],
                    parmeter_mode='align')  # 0
         w.add_step('Transform', 'poisson_noise', img='pipeline', snr=[2, 5])  # 1
         w.add_step('Organize', 'care_prep', input_step=[0, 1], img_high='pipeline', img_low='pipeline')  # 2
@@ -39,7 +39,7 @@ class TestWorkflow(unittest.TestCase):
         w.run(verbose=False)
         files = os.listdir(os.path.join(w.path, DATA_FOLDER_NAME))
         shutil.rmtree(w.path)
-        self.assertEqual(len(files), 17)
+        self.assertEqual(len(files), 28)
 
 
 if __name__ == '__main__':
