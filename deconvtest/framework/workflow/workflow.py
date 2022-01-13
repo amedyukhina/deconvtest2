@@ -304,14 +304,15 @@ class Workflow:
                 for st in items[1]['item_steps']:
                     item['item_steps'].append(copy.deepcopy(st))
                 item['item_steps'].append(copy.deepcopy(items[2]['item_steps'][0]))
+                item_ids = [items[i]['item_steps'][-1]['outputID'] for i in range(len(items))]
 
-                outputID = items[2]['item_steps'][-1]['outputID'].split('_')[0] + '_' + \
-                           items[1]['item_steps'][-1]['outputID'].split('_')[-1] + \
-                           items[2]['item_steps'][-1]['outputID'].split('_')[-1]
+                outputID = item_ids[2].split('_')[0] + '_' + \
+                           item_ids[1][len(item_ids[1].split('_')[0])+1:] + \
+                           item_ids[2][len(item_ids[2].split('_')[0])+1:]
                 inputIDs = [items[0]['item_steps'][-1]['outputID'],
                             items[1]['item_steps'][-1]['outputID']]
                 if step.name == 'Organize':
-                    outputID = outputID.replace('_' + inputIDs[0].split('_')[1], '_')
+                    outputID = outputID.replace('_' + inputIDs[0][len(inputIDs[0].split('_')[0])+1:], '_')
                 combined_block = self.__add_ids(combined_block, item, inputIDs, outputID)
 
                 i += 1
