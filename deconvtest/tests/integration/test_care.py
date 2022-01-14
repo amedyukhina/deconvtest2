@@ -2,22 +2,40 @@ import os
 import shutil
 import unittest
 
+import numpy as np
+from am_utils.utils import imsave
 from ddt import ddt
+from skimage import io
 
 from ...core.utils.constants import *
 from ...framework.workflow.workflow import Workflow
+from ...methods.transforms.poisson_noise import poisson_noise
 
 
 @ddt
 class TestWorkflow(unittest.TestCase):
 
     def test_care_workflow(self):
-        w = Workflow(name='test workflow')
+
+        w = Workflow(name='data_for_care')
         w.add_step('GroundTruth', 'ellipsoid',
                    size=[10, 11], voxel_size=[1],
                    parmeter_mode='align')  # 0
-        w.add_step('Transform', 'poisson_noise', img='pipeline', snr=[2, 5])  # 1
-        w.add_step('Organize', 'care_prep', input_step=[0, 1], img_high='pipeline', img_low='pipeline')  # 2
+        w.run(verbose=False)
+
+        path = w.path
+        for fn in os.listdir(os.path.join(path, 'data')):
+            img = io.imread(os.path.join(path, 'data', fn))
+            img = poisson_noise(img, 5)
+            imsave(os.path.join(path, 'noise', fn), img.astype(np.uint8))
+
+        w = Workflow(name='test workflow')
+        w.add_step('ImageList', 'symlink_to_workflow_folder',
+                   input_dir=os.path.join(path, 'data'))  # 0
+        w.add_step('ImageList', 'symlink_to_workflow_folder',
+                   input_dir=os.path.join(path, 'noise'))  # 1
+        w.add_step('Organize', 'care_prep', input_step=[0, 1],
+                   img_high='pipeline', img_low='pipeline')  # 2
         w.add_step('DataGen', 'care_datagen',
                    base_dir='pipeline', patch_size=[[4, 4, 4]],
                    n_patches_per_image=[5], verbose=False)  # 3
@@ -39,7 +57,8 @@ class TestWorkflow(unittest.TestCase):
         w.run(verbose=False)
         files = os.listdir(os.path.join(w.path, DATA_FOLDER_NAME))
         shutil.rmtree(w.path)
-        self.assertEqual(len(files), 28)
+        shutil.rmtree(path)
+        self.assertEqual(len(files), 11)
 
 
 if __name__ == '__main__':
