@@ -171,7 +171,36 @@ class Workflow:
         for fn in os.listdir(output_path):
             if fn.endswith('csv'):
                 stats = pd.concat([stats, pd.read_csv(os.path.join(output_path, fn))], ignore_index=True)
+        stats = self.__add_params_to_output_stats(stats)
         stats.to_csv(os.path.join(self.path, self.name + '_results.csv'), index=False)
+
+    def __add_params_to_output_stats(self, stats):
+        for i in range(len(stats)):
+            step_id = stats.iloc[i]['OutputID']
+            stats = self.__add_param_values(stats, i, step_id)
+
+        return stats
+
+    def __add_param_values(self, stats, i, step_id):
+        cur_step = self.get_item_step(step_id)
+        step_num = int(step_id.split('_')[0])
+        parameters = self.steps[step_num].parameters
+        parameters = parameters[parameters['ID'] == cur_step['ID']]
+        for col in parameters.columns:
+            if col not in ['ID']:
+                stats.at[i, rf"{step_num}_{cur_step['method']}_{col}"] = parameters[col].iloc[0]
+        if 'inputIDs' in cur_step:
+            for inputID in cur_step['inputIDs']:
+                stats = self.__add_param_values(stats, i, inputID)
+        return stats
+
+    def get_item_step(self, outputID):
+        if self.workflow_graph is not None:
+            for item in self.workflow_graph['items']:
+                for m in item['item_steps']:
+                    if m['outputID'] == outputID:
+                        return m
+        return None
 
     def __run_item(self, item, output_path, nsteps=None):
         steps = item['item_steps']
