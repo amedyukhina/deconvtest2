@@ -125,6 +125,7 @@ class Workflow:
         for step in self.steps:
             block = dict(name=rf'block{len(blocks):02d}', items=[])
             block = self.__add_items_to_block(step, block)
+            block = self.__add_module_ids(block)
 
             if step.n_inputs > 0:
                 if step.n_inputs == 2 and step.align is True:
@@ -186,6 +187,7 @@ class Workflow:
             step_kwargs = self.__add_params_to_module(parameters[parameters['ID'] == step_kwargs['ID']].iloc[0],
                                                       step_kwargs)
             step_kwargs.pop('ID')
+            step_kwargs.pop('moduleID')
             outputID = step_kwargs.pop('outputID')
             type_output = step.type_output
             type_input = step.type_input
@@ -301,8 +303,17 @@ class Workflow:
             if item_ids[0] == item_ids[1]:
                 item = dict(name=rf'item{i:03d}')
                 item['item_steps'] = []
+                module_ids = []
+                for st in items[0]['item_steps']:
+                    module_id = st['moduleID']
+                    if module_id not in module_ids:
+                        item['item_steps'].append(copy.deepcopy(st))
+                        module_ids.append(module_id)
                 for st in items[1]['item_steps']:
-                    item['item_steps'].append(copy.deepcopy(st))
+                    module_id = st['moduleID']
+                    if module_id not in module_ids:
+                        item['item_steps'].append(copy.deepcopy(st))
+                        module_ids.append(module_id)
                 item['item_steps'].append(copy.deepcopy(items[2]['item_steps'][0]))
                 item_ids = [items[i]['item_steps'][-1]['outputID'] for i in range(len(items))]
 
@@ -325,18 +336,19 @@ class Workflow:
         block['items'][-1]['item_steps'][-1]['outputID'] = outputID.rstrip('_').strip('_')
         return block
 
-    def __add_module_ids(self):
+    def __add_module_ids(self, block):
         # add unique module ids
         items = []
-        for item in self.workflow_graph['items']:
-            for module in item['modules']:
-                module_id = module['name'] + '_' + module['outputID']
+        for item in block['items']:
+            for module in item['item_steps']:
+                module_id = module['outputID']
                 if 'inputIDs' in module:
                     module_id += '_' + '_'.join(module['inputIDs'])
-                module['module_id'] = module_id
+                module['moduleID'] = module_id
 
             items.append(item)
-        self.workflow_graph['items'] = items
+        block['items'] = items
+        return block
 
     def __remove_repeating_steps(self):
         for i in range(len(self.workflow_graph['items'])):
