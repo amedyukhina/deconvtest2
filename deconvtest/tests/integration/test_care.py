@@ -3,12 +3,15 @@ import shutil
 import unittest
 
 import numpy as np
+import pandas as pd
 from am_utils.utils import imsave
 from ddt import ddt
 from skimage import io
 
 from ...core.utils.constants import *
 from ...framework.workflow.workflow import Workflow
+from ...methods.evaluation.nrmse import nrmse
+from ...methods.evaluation.ssim import ssim
 from ...methods.transforms.poisson_noise import poisson_noise
 
 
@@ -46,19 +49,33 @@ class TestWorkflow(unittest.TestCase):
         w.add_step('Evaluation', ['rmse', 'nrmse', 'ssim'], input_step=[0, 5], gt='pipeline', img='pipeline')  # 6
 
         w.save()
-        gr = w.get_workflow_graph()
-        for item in gr['items']:
-            print('Item:', item['name'], ' Steps:\n')
-            for m in item['item_steps']:
-                print(m)
 
         w.run(verbose=False, nsteps=4)
         w.run(verbose=False, njobs=1, nsteps=6)
         w.run(verbose=False)
         files = os.listdir(os.path.join(w.path, DATA_FOLDER_NAME))
+        self.assertEqual(len(files), 11)
+
+        for fn1, fn2 in [('00_00_0000.tif', '02_0000/high/00_00_0000.tif'),
+                         ('00_00_0001.tif', '02_0000/high/00_00_0001.tif'),
+                         ('01_00_0000.tif', '02_0000/low/00_00_0000.tif'),
+                         ('01_00_0001.tif', '02_0000/low/00_00_0001.tif')
+                         ]:
+            img1 = io.imread(os.path.join(w.path, DATA_FOLDER_NAME, fn1))
+            img2 = io.imread(os.path.join(w.path, DATA_FOLDER_NAME, fn2))
+            self.assertAlmostEqual(np.sum(abs(img1 - img2)), 0, 4)
+
+        for fn1, fn2, fn3 in [('00_00_0000.tif', '05_00000000000000000000.tif', '06_000000000000000000000000.csv'),
+                              ('00_00_0001.tif', '05_00010000000000000000.tif', '06_000100000000000000000000.csv')
+                              ]:
+            img1 = io.imread(os.path.join(w.path, DATA_FOLDER_NAME, fn1))
+            img2 = io.imread(os.path.join(w.path, DATA_FOLDER_NAME, fn2))
+            df = pd.read_csv(os.path.join(w.path, DATA_FOLDER_NAME, fn3)).iloc[0]
+            self.assertAlmostEqual(ssim(img1, img2), df['ssim'], 4)
+            self.assertAlmostEqual(nrmse(img1, img2), df['nrmse'], 4)
+
         shutil.rmtree(w.path)
         shutil.rmtree(path)
-        self.assertEqual(len(files), 11)
 
 
 if __name__ == '__main__':
