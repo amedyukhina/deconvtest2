@@ -134,7 +134,7 @@ class Workflow:
                     blocks = self.__permute_items(step, block, blocks)
             else:
                 blocks.append(block)
-        self.workflow_graph = blocks[-1]
+        self.workflow_graph = self.__add_module_ids(blocks[-1])
         self.workflow_graph['name'] = self.name
 
         if to_json:
@@ -216,7 +216,6 @@ class Workflow:
             step_kwargs = self.__add_params_to_module(parameters[parameters['ID'] == step_kwargs['ID']].iloc[0],
                                                       step_kwargs)
             step_kwargs.pop('ID')
-            step_kwargs.pop('moduleID')
             outputID = step_kwargs.pop('outputID')
             type_output = step.type_output
             type_input = step.type_input
@@ -224,9 +223,7 @@ class Workflow:
                 type_input = [type_input]
             output_name = os.path.join(output_path, outputID + EXTENSIONS[type_output])
 
-            lock_file = outputID
-            if 'inputIDs' in step_kwargs:
-                lock_file = '_'.join(step_kwargs['inputIDs']) + '_' + lock_file
+            lock_file = step_kwargs.pop('moduleID')
             lock_file = os.path.join(output_path, lock_file + '.lock')
             np.random.seed()
             sleep(np.random.rand())
